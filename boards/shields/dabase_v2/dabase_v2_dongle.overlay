@@ -22,6 +22,10 @@
         y-codes = <INPUT_REL_Y>;
     };
 
+    mouse_layer_toggle: mouse_layer_toggle {
+        compatible = "zmk,input-processor-temp-layer";
+    };
+
     mock_kscan: mock_kscan_0 {
         compatible = "zmk,kscan-mock";
         columns = <0>;
@@ -65,7 +69,8 @@
         compatible = "zmk,input-listener";
         status = "okay";
         device = <&mouse_ps2_proxy>;
-        input-processors = <&mouse_xy_swap INPUT_TRANSFORM_XY_SWAP>;
+        input-processors = <&mouse_xy_swap INPUT_TRANSFORM_XY_SWAP>,
+                          <&mouse_layer_toggle 1 500>;
     };
 };
 
