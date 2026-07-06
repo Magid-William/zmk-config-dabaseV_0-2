@@ -12,5 +12,8 @@ manifest:
     - name: kb_zmk_ps2_mouse_trackpoint_driver
       remote: maged-william
       revision: stream-only-mode-split-fix
+    - name: zmk-behavior-battery-percentage-printer
+      remote: badjeff
+      revision: main
   self:
     path: config
