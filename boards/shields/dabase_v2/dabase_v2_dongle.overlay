@@ -17,7 +17,7 @@
 
     mouse_xy_swap: mouse_xy_swap {
         compatible = "zmk,input-processor-transform";
-        #input-processor-cells = <2>;
+        #input-processor-cells = <1>;
         x-codes = <INPUT_REL_X>;
         y-codes = <INPUT_REL_Y>;
     };
@@ -65,7 +65,7 @@
         compatible = "zmk,input-listener";
         status = "okay";
         device = <&mouse_ps2_proxy>;
-        input-processors = <&mouse_xy_swap INPUT_TRANSFORM_XY_SWAP 0>;
+        input-processors = <&mouse_xy_swap INPUT_TRANSFORM_XY_SWAP>;
     };
 };
 
