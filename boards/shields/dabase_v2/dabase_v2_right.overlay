@@ -52,6 +52,7 @@
     };
     mouse_ps2_split: mouse_ps2_split {
         compatible = "zmk,input-split";
+        reg = <0>;
         device = <&mouse_ps2>;
     };
 };

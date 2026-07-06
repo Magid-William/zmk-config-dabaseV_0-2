@@ -49,6 +49,7 @@
     };
     mouse_ps2_proxy: mouse_ps2_proxy {
         compatible = "zmk,input-split";
+        reg = <0>;
     };
 };
 
