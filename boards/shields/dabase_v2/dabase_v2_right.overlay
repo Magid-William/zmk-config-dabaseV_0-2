@@ -29,3 +29,25 @@
         , <&gpio1 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
     ;
 };
+
+/ {
+    gpio_ps2: gpio_ps2 {
+        status = "okay";
+        compatible = "gpio-ps2";
+        scl-gpios = <&gpio0 6 GPIO_ACTIVE_HIGH>;
+        sda-gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>;
+    };
+    mouse_ps2: mouse_ps2 {
+        status = "okay";
+        compatible = "zmk,input-mouse-ps2";
+        ps2-device = <&gpio_ps2>;
+    };
+    mouse_ps2_input_listener: mouse_ps2_input_listener {
+        compatible = "zmk,input-listener-ps2";
+        status = "okay";
+        device = <&mouse_ps2>;
+        layer-toggle = <1>;
+        layer-toggle-delay-ms = <250>;
+        layer-toggle-timeout-ms = <500>;
+    };
+};

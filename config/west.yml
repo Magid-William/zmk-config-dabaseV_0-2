@@ -1,11 +1,16 @@
 manifest:
   remotes:
-    - name: zmkfirmware
-      url-base: https://github.com/zmkfirmware
+    - name: badjeff
+      url-base: https://github.com/badjeff
+    - name: maged-william
+      url-base: https://github.com/Maged-William
   projects:
     - name: zmk
-      remote: zmkfirmware
+      remote: badjeff
       revision: main
       import: app/west.yml
+    - name: kb_zmk_ps2_mouse_trackpoint_driver
+      remote: maged-william
+      revision: stream-only-mode-fixed
   self:
     path: config
