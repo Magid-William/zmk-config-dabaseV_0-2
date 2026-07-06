@@ -24,6 +24,7 @@
 
     mouse_layer_toggle: mouse_layer_toggle {
         compatible = "zmk,input-processor-temp-layer";
+        #input-processor-cells = <2>;
     };
 
     mock_kscan: mock_kscan_0 {
