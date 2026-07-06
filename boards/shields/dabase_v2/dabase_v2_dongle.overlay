@@ -5,12 +5,21 @@
  */
 
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <dt-bindings/zmk/input_transform.h>
+#include <dt-bindings/input/input-event-codes.h>
 #include "dabase_v2-layouts.dtsi"
 
 / {
     chosen {
         zmk,kscan = &mock_kscan;
         zmk,physical-layout = &dabase_layout;
+    };
+
+    mouse_xy_swap: mouse_xy_swap {
+        compatible = "zmk,input-processor-transform";
+        #input-processor-cells = <2>;
+        x-codes = <INPUT_REL_X>;
+        y-codes = <INPUT_REL_Y>;
     };
 
     mock_kscan: mock_kscan_0 {
@@ -56,6 +65,7 @@
         compatible = "zmk,input-listener";
         status = "okay";
         device = <&mouse_ps2_proxy>;
+        input-processors = <&mouse_xy_swap INPUT_TRANSFORM_XY_SWAP 0>;
     };
 };
 
