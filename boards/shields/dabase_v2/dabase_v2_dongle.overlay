@@ -52,6 +52,11 @@
         status = "okay";
         reg = <0 1>;
     };
+    mouse_ps2_listener_central: mouse_ps2_listener_central {
+        compatible = "zmk,input-listener";
+        status = "okay";
+        device = <&mouse_ps2_proxy>;
+    };
 };
 
 &dabase_layout {
