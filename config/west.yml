@@ -11,6 +11,6 @@ manifest:
       import: app/west.yml
     - name: kb_zmk_ps2_mouse_trackpoint_driver
       remote: maged-william
-      revision: stream-only-mode-fixed
+      revision: stream-only-mode-split-fix
   self:
     path: config
