@@ -127,7 +127,7 @@
         ARROWS {
             bindings = <
 &trans &kp LC(X)    &kp LC(C)    &kp LC(V)      &kp LG(V)      &kp LG(LS(T))                    &trans      &kp PG_UP   &kp UP      &kp PG_DN   &kp ESC &trans
-&trans &kp LEFT_GUI &kp LEFT_ALT &kp LCTRL      &kp LEFT_SHIFT &kp Y                            &kp HOME    &kp LEFT    &kp DOWN    &kp RIGHT   &kp END &trans
+&trans &kp LEFT_GUI &kp LEFT_ALT &kp LCTRL      &kp LEFT_SHIFT &bapp                           &kp HOME    &kp LEFT    &kp DOWN    &kp RIGHT   &kp END &trans
 &trans &kp F6       &kp F7       &kp F8         &kp F9         &kp F10                          &kp F12     &kp F11     &trans      &trans      &trans  &trans
 &trans &trans       &trans       &studio_unlock &trans         &trans                           &kp BSPC    &kp DELETE  &trans      &trans      &trans  &trans
             >;
