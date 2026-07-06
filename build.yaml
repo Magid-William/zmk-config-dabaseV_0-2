@@ -36,7 +36,7 @@ include:
     artifact-name: dabase_v2_right_central
   - board: xiao_ble//zmk
     shield: dabase_v2_dongle
-    cmake-args: -DCONFIG_ZMK_LOG_LEVEL_DBG=y
+    cmake-args: -DCONFIG_ZMK_LOG_LEVEL_DBG=y -DCONFIG_ZMK_USB_LOGGING=y
     artifact-name: dabase_v2_dongle_debug
 
   - board: nice_nano//zmk
