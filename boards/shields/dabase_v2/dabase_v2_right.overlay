@@ -50,4 +50,8 @@
         layer-toggle-delay-ms = <250>;
         layer-toggle-timeout-ms = <500>;
     };
+    mouse_ps2_split: mouse_ps2_split {
+        compatible = "zmk,input-split";
+        device = <&mouse_ps2>;
+    };
 };

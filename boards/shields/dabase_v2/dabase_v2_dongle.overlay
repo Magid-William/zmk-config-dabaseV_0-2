@@ -47,6 +47,9 @@
         sensors = <&left_encoder>;
         triggers-per-rotation = <20>;
     };
+    mouse_ps2_proxy: mouse_ps2_proxy {
+        compatible = "zmk,input-split";
+    };
 };
 
 &dabase_layout {
