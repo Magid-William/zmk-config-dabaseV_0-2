@@ -71,12 +71,18 @@
         status = "okay";
         device = <&mouse_ps2_proxy>;
         input-processors = <&zip_zxy>,
+                          <&zip_report_rate_limit 8>,
                           <&mouse_xy_swap INPUT_TRANSFORM_XY_SWAP>,
                           <&mouse_layer_toggle 3 500>;
     };
 };
 
 #include <input/processors/xyz.dtsi>
+#include <input/processors/report_rate_limit.dtsi>
+
+&zip_report_rate_limit {
+    limit-ble-only;
+};
 
 &dabase_layout {
     transform = <&mock_transform>;

@@ -55,8 +55,9 @@
         status = "okay";
         reg = <0 1>;
         device = <&mouse_ps2>;
-        input-processors = <&zip_xyz>;
+        input-processors = <&zip_report_rate_limit 4>, <&zip_xyz>;
     };
 };
 
 #include <input/processors/xyz.dtsi>
+#include <input/processors/report_rate_limit.dtsi>
