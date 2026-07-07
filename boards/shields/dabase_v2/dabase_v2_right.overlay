@@ -55,5 +55,8 @@
         status = "okay";
         reg = <0 1>;
         device = <&mouse_ps2>;
+        input-processors = <&zip_xyz>;
     };
 };
+
+#include <input/processors/xyz.dtsi>

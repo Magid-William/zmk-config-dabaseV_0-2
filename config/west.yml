@@ -15,5 +15,8 @@ manifest:
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
       revision: main
+    - name: zmk-input-processor-xyz
+      remote: badjeff
+      revision: main
   self:
     path: config
