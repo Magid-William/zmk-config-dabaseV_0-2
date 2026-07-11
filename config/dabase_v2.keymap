@@ -69,14 +69,14 @@
         ms_MUP: mod_morph_shift_scroll_up {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_UP>, <&msc MOVE_Y(20)>;
+            bindings = <&msc SCRL_UP>, <&msc MOVE_X(20)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         ms_MDOWN: mod_morph_shift_scroll_down {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_DOWN>, <&msc MOVE_Y(-20)>;
+            bindings = <&msc SCRL_DOWN>, <&msc MOVE_X(-20)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
