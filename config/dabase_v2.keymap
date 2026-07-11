@@ -53,28 +53,28 @@
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
             bindings = <&mmv MOVE_UP>, <&mmv_fast MOVE_UP>;
-            mods = <(MOD_LSHIFT|MOD_RSHIFT)>;
+            mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         mm_MDOWN: mod_morph_shift_mouse_down {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
             bindings = <&mmv MOVE_DOWN>, <&mmv_fast MOVE_DOWN>;
-            mods = <(MOD_LSHIFT|MOD_RSHIFT)>;
+            mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         mm_MLEFT: mod_morph_shift_mouse_left {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
             bindings = <&mmv MOVE_LEFT>, <&mmv_fast MOVE_LEFT>;
-            mods = <(MOD_LSHIFT|MOD_RSHIFT)>;
+            mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         mm_MRIGHT: mod_morph_shift_mouse_right {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
             bindings = <&mmv MOVE_RIGHT>, <&mmv_fast MOVE_RIGHT>;
-            mods = <(MOD_LSHIFT|MOD_RSHIFT)>;
+            mods = <(MOD_LSFT|MOD_RSFT)>;
         };
     };
 
