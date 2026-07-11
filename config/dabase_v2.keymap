@@ -69,28 +69,32 @@
         ms_MUP: mod_morph_shift_scroll_up {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_UP>, <&msc MOVE_X(20)>;
+            /* Shift the value left to hit the vertical (Y-axis) slot */
+            bindings = <&msc SCRL_UP>, <&msc (((20) & 0xFFFF) << 16)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         ms_MDOWN: mod_morph_shift_scroll_down {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_DOWN>, <&msc MOVE_X(-20)>;
+            /* Negative value shifted left for vertical down */
+            bindings = <&msc SCRL_DOWN>, <&msc (((-20) & 0xFFFF) << 16)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         ms_MLEFT: mod_morph_shift_scroll_left {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_LEFT>, <&msc MOVE_X(-20)>;
+            /* No bit-shift; targets the lower horizontal (X-axis) slot */
+            bindings = <&msc SCRL_LEFT>, <&msc ((-20) & 0xFFFF)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         ms_MRIGHT: mod_morph_shift_scroll_right {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_RIGHT>, <&msc MOVE_X(20)>;
+            /* No bit-shift; targets the lower horizontal (X-axis) slot */
+            bindings = <&msc SCRL_RIGHT>, <&msc ((20) & 0xFFFF)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
     };
