@@ -43,7 +43,7 @@
             #binding-cells = <1>;
             x-input-code = <0x00>;
             y-input-code = <0x01>;
-            time-to-max-speed-ms = <50>;
+            time-to-max-speed-ms = <300>;
             acceleration-exponent = <1>;
         };
     };
@@ -166,8 +166,8 @@
 
         FAST_MOUSE {
             bindings = <
-&trans  &kp LC(X)      &kp LC(C)      &kp LC(V)       &kp LG(V)       &kp LG(LS(T))          &trans          &msc SCRL_UP    &mmv_fast MOVE_UP    &msc SCRL_DOWN  &kp ESCAPE      &trans
-&trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &trans                 &msc SCRL_LEFT  &mmv_fast MOVE_LEFT  &mmv_fast MOVE_DOWN  &mmv_fast MOVE_RIGHT &msc SCRL_RIGHT &trans
+&trans  &kp LC(X)      &kp LC(C)      &kp LC(V)       &kp LG(V)       &kp LG(LS(T))          &trans          &msc SCRL_UP    &mmv_fast ((-1200) & 0xFFFF)    &msc SCRL_DOWN  &kp ESCAPE      &trans
+&trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &trans                 &msc SCRL_LEFT  &mmv_fast (((-1200) & 0xFFFF) << 16)  &mmv_fast ((1200) & 0xFFFF)  &mmv_fast (((1200) & 0xFFFF) << 16) &msc SCRL_RIGHT &trans
 &trans  &kp F1         &kp F2         &kp F3          &kp F4          &kp F5                 &mkp MB1        &mkp MB2        &mkp MB3        &trans          &trans          &trans
 &trans  &trans         &trans         &trans          &trans          &lemmein               &mkp MB3        &mkp MB2        &mkp MB1        &trans          &trans          &trans
             >;
