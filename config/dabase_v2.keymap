@@ -37,6 +37,34 @@
 
             mods = <(MOD_LCTL|MOD_RCTL)>;
         };
+
+        mm_MUP: mod_morph_shift_mouse_up {
+            compatible = "zmk,behavior-mod-morph";
+            #binding-cells = <0>;
+            bindings = <&mmv MOVE_UP>, <&mmv MOVE_UP SCALE(2,1)>;
+            mods = <(MOD_LSHIFT|MOD_RSHIFT)>;
+        };
+
+        mm_MDOWN: mod_morph_shift_mouse_down {
+            compatible = "zmk,behavior-mod-morph";
+            #binding-cells = <0>;
+            bindings = <&mmv MOVE_DOWN>, <&mmv MOVE_DOWN SCALE(2,1)>;
+            mods = <(MOD_LSHIFT|MOD_RSHIFT)>;
+        };
+
+        mm_MLEFT: mod_morph_shift_mouse_left {
+            compatible = "zmk,behavior-mod-morph";
+            #binding-cells = <0>;
+            bindings = <&mmv MOVE_LEFT>, <&mmv MOVE_LEFT SCALE(2,1)>;
+            mods = <(MOD_LSHIFT|MOD_RSHIFT)>;
+        };
+
+        mm_MRIGHT: mod_morph_shift_mouse_right {
+            compatible = "zmk,behavior-mod-morph";
+            #binding-cells = <0>;
+            bindings = <&mmv MOVE_RIGHT>, <&mmv MOVE_RIGHT SCALE(2,1)>;
+            mods = <(MOD_LSHIFT|MOD_RSHIFT)>;
+        };
     };
 
     combos {
@@ -134,8 +162,8 @@
 
         MOUSE {
             bindings = <
-&trans  &kp LC(X)      &kp LC(C)      &kp LC(V)       &kp LG(V)       &kp LG(LS(T))          &trans          &msc SCRL_UP    &mmv MOVE_UP    &msc SCRL_DOWN  &kp ESCAPE      &trans
-&trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &trans                 &msc SCRL_LEFT  &mmv MOVE_LEFT  &mmv MOVE_DOWN  &mmv MOVE_RIGHT &msc SCRL_RIGHT &trans
+&trans  &kp LC(X)      &kp LC(C)      &kp LC(V)       &kp LG(V)       &kp LG(LS(T))          &trans          &msc SCRL_UP    &mm_MUP    &msc SCRL_DOWN  &kp ESCAPE      &trans
+&trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &trans                 &msc SCRL_LEFT  &mm_MLEFT  &mm_MDOWN  &mm_MRIGHT &msc SCRL_RIGHT &trans
 &trans  &kp F1         &kp F2         &kp F3          &kp F4          &kp F5                 &mkp MB1        &mkp MB2        &mkp MB3        &trans          &trans          &trans
 &trans  &trans         &trans         &trans          &trans          &lemmein               &mkp MB3        &mkp MB2        &mkp MB1        &trans          &trans          &trans
             >;
