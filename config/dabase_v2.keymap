@@ -48,6 +48,11 @@
         };
     };
 
+    mmv_fast_input_listener: mmv_fast_input_listener {
+        compatible = "zmk,input-listener";
+        device = <&mmv_fast>;
+    };
+
     combos {
         compatible = "zmk,combos";
 
