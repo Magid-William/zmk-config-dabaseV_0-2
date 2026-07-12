@@ -41,69 +41,28 @@
         mm_MUP: mod_morph_shift_mouse_up {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&mmv MOVE_UP>, <&mmv ((-1200) & 0xFFFF)>;
+            bindings = <&mmv ((-1200) & 0xFFFF)>, <&mmv MOVE_UP>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         mm_MDOWN: mod_morph_shift_mouse_down {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&mmv MOVE_DOWN>, <&mmv ((1200) & 0xFFFF)>;
+            bindings = <&mmv ((1200) & 0xFFFF)>, <&mmv MOVE_DOWN>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         mm_MLEFT: mod_morph_shift_mouse_left {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&mmv MOVE_LEFT>, <&mmv (((-1200) & 0xFFFF) << 16)>;
+            bindings = <&mmv (((-1200) & 0xFFFF) << 16)>, <&mmv MOVE_LEFT>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         mm_MRIGHT: mod_morph_shift_mouse_right {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&mmv MOVE_RIGHT>, <&mmv (((1200) & 0xFFFF) << 16)>;
-            mods = <(MOD_LSFT|MOD_RSFT)>;
-        };
-
-        fast_msc: fast_msc {
-            compatible = "zmk,behavior-mouse-scroll";
-            #binding-cells = <1>;
-            time-to-max-speed-ms = <10>; /* Near instant snap to top speed */
-            acceleration-exponent = <0>;  /* Linear speed mapping */
-        };
-
-        /* Physically sits on the LEFT of Mouse Up -> Intended to Scroll DOWN */
-        ms_MUP: mod_morph_shift_scroll_up {
-            compatible = "zmk,behavior-mod-morph";
-            #binding-cells = <0>;
-            /* Baseline down, shifted fast down */
-            bindings = <&msc SCRL_DOWN>, <&msc MOVE_Y(-20)>;
-            mods = <(MOD_LSFT|MOD_RSFT)>;
-        };
-
-        /* Physically sits on the RIGHT of Mouse Up -> Intended to Scroll UP */
-        ms_MDOWN: mod_morph_shift_scroll_down {
-            compatible = "zmk,behavior-mod-morph";
-            #binding-cells = <0>;
-            /* Baseline up, shifted fast up */
-            bindings = <&msc SCRL_UP>, <&msc MOVE_Y(20)>;
-            mods = <(MOD_LSFT|MOD_RSFT)>;
-        };
-
-        /* Physically sits on the far LEFT -> Intended to Scroll LEFT */
-        ms_MLEFT: mod_morph_shift_scroll_left {
-            compatible = "zmk,behavior-mod-morph";
-            #binding-cells = <0>;
-            bindings = <&msc SCRL_LEFT>, <&msc MOVE_X(-20)>;
-            mods = <(MOD_LSFT|MOD_RSFT)>;
-        };
-
-        /* Physically sits on the far RIGHT -> Intended to Scroll RIGHT */
-        ms_MRIGHT: mod_morph_shift_scroll_right {
-            compatible = "zmk,behavior-mod-morph";
-            #binding-cells = <0>;
-            bindings = <&msc SCRL_RIGHT>, <&msc MOVE_X(20)>;
+            bindings = <&mmv (((1200) & 0xFFFF) << 16)>, <&mmv MOVE_RIGHT>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
     };
@@ -203,10 +162,10 @@
 
         MOUSE {
             bindings = <
-&trans  &kp LC(X)      &kp LC(C)      &kp LC(V)       &kp LG(V)       &kp LG(LS(T))          &trans          &ms_MUP    &mm_MUP    &ms_MDOWN  &kp ESCAPE      &trans
-&trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &trans                 &ms_MLEFT  &mm_MLEFT  &mm_MDOWN  &mm_MRIGHT &ms_MRIGHT &trans
-&trans  &kp F1         &kp F2         &kp F3          &kp F4          &kp F5                 &mkp MB1        &mkp MB2        &mkp MB3        &trans          &trans          &trans
-&trans  &trans         &trans         &trans          &trans          &lemmein               &mkp MB3        &mkp MB2        &mkp MB1        &trans          &trans          &trans
+&trans  &kp LC(X)      &kp LC(C)      &kp LC(V)       &kp LG(V)       &kp LG(LS(T))          &trans          &msc SCRL_DOWN  &mm_MUP    &msc SCRL_UP &kp ESCAPE      &trans
+&trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &trans                 &msc SCRL_LEFT  &mm_MLEFT       &mm_MDOWN  &mm_MRIGHT   &msc SCRL_RIGHT &trans
+&trans  &kp F1         &kp F2         &kp F3          &kp F4          &kp F5                 &mkp MB1        &mkp MB2        &mkp MB3   &trans       &trans          &trans
+&trans  &trans         &trans         &trans          &trans          &lemmein               &mkp MB3        &mkp MB2        &mkp MB1   &trans       &trans          &trans
             >;
         };
 
