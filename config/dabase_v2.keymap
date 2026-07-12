@@ -76,28 +76,30 @@
         ms_MUP: mod_morph_shift_scroll_up {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_UP>, <&fast_msc SCRL_UP>;
+            /* MOVE_X handles vertical wheel inputs for &msc */
+            bindings = <&msc SCRL_UP>, <&msc MOVE_X(20)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         ms_MDOWN: mod_morph_shift_scroll_down {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_DOWN>, <&fast_msc SCRL_DOWN>;
+            bindings = <&msc SCRL_DOWN>, <&msc MOVE_X(-20)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         ms_MLEFT: mod_morph_shift_scroll_left {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_LEFT>, <&fast_msc SCRL_LEFT>;
+            /* MOVE_Y handles horizontal wheel inputs for &msc */
+            bindings = <&msc SCRL_LEFT>, <&msc MOVE_Y(-20)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
         ms_MRIGHT: mod_morph_shift_scroll_right {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_RIGHT>, <&fast_msc SCRL_RIGHT>;
+            bindings = <&msc SCRL_RIGHT>, <&msc MOVE_Y(20)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
     };
