@@ -73,33 +73,37 @@
             acceleration-exponent = <0>;  /* Linear speed mapping */
         };
 
+        /* Physically sits on the LEFT of Mouse Up -> Intended to Scroll DOWN */
         ms_MUP: mod_morph_shift_scroll_up {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            /* MOVE_X handles vertical wheel inputs for &msc */
-            bindings = <&msc SCRL_UP>, <&msc MOVE_X(20)>;
+            /* Baseline down, shifted fast down */
+            bindings = <&msc SCRL_DOWN>, <&msc MOVE_Y(-20)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
+        /* Physically sits on the RIGHT of Mouse Up -> Intended to Scroll UP */
         ms_MDOWN: mod_morph_shift_scroll_down {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_DOWN>, <&msc MOVE_X(-20)>;
+            /* Baseline up, shifted fast up */
+            bindings = <&msc SCRL_UP>, <&msc MOVE_Y(20)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
+        /* Physically sits on the far LEFT -> Intended to Scroll LEFT */
         ms_MLEFT: mod_morph_shift_scroll_left {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            /* MOVE_Y handles horizontal wheel inputs for &msc */
-            bindings = <&msc SCRL_LEFT>, <&msc MOVE_Y(-20)>;
+            bindings = <&msc SCRL_LEFT>, <&msc MOVE_X(-20)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
 
+        /* Physically sits on the far RIGHT -> Intended to Scroll RIGHT */
         ms_MRIGHT: mod_morph_shift_scroll_right {
             compatible = "zmk,behavior-mod-morph";
             #binding-cells = <0>;
-            bindings = <&msc SCRL_RIGHT>, <&msc MOVE_Y(20)>;
+            bindings = <&msc SCRL_RIGHT>, <&msc MOVE_X(20)>;
             mods = <(MOD_LSFT|MOD_RSFT)>;
         };
     };
