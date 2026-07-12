@@ -2,6 +2,7 @@
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/pointing.h>
+#include <behaviors/battery_percentage_printer.dtsi>
 
 / {
     behaviors {
@@ -144,17 +145,17 @@
         symbol {
             label = "sym";
             bindings = <
-&trans  &kp GRAVE &kp MINUS &kp EQUAL &kp APOS &kp ASTRK                   &trans      &trans          &kp LS(BACKSLASH)   &kp AMPS        &kp ESC       &trans
-&trans  &kp N1    &kp N2    &kp N3    &kp N4   &kp N5                      &arrowfunc  &kp LEFT_SHIFT  &kp LCTRL           &kp LEFT_ALT    &kp LEFT_WIN  &trans
+&trans  &kp GRAVE &kp MINUS &kp EQUAL &kp APOS &kp ASTRK                   &arrowfunc  &trans          &kp LS(BACKSLASH)   &kp AMPS        &kp ESC       &trans
+&trans  &kp N1    &kp N2    &kp N3    &kp N4   &kp N5                      &bapp       &kp LEFT_SHIFT  &kp LCTRL           &kp LEFT_ALT    &kp LEFT_WIN  &trans
 &trans  &kp N0    &kp N6    &kp N7    &kp N8   &kp N9                      &mkp MB1    &mkp MB2        &kp COMMA           &kp DOT         &kp BACKSLASH &trans
-&trans  &trans  &trans  &mm_BP  &mm_BP  &mm_RP                             &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &trans    &trans    &mm_BP    &mm_BP   &mm_RP                      &trans      &trans          &trans              &trans          &trans        &trans
             >;
         };
 
         ARROWS {
             bindings = <
 &trans &kp LC(X)    &kp LC(C)    &kp LC(V)      &kp LG(V)      &kp LG(LS(T))                    &trans      &kp PG_UP   &kp UP      &kp PG_DN   &kp ESC &trans
-&trans &kp LEFT_GUI &kp LEFT_ALT &kp LCTRL      &kp LEFT_SHIFT &kp Y                            &kp HOME    &kp LEFT    &kp DOWN    &kp RIGHT   &kp END &trans
+&trans &kp LEFT_GUI &kp LEFT_ALT &kp LCTRL      &kp LEFT_SHIFT &bapp                            &kp HOME    &kp LEFT    &kp DOWN    &kp RIGHT   &kp END &trans
 &trans &kp F6       &kp F7       &kp F8         &kp F9         &kp F10                          &kp F12     &kp F11     &trans      &trans      &trans  &trans
 &trans &trans       &trans       &studio_unlock &trans         &trans                           &kp BSPC    &kp DELETE  &trans      &trans      &trans  &trans
             >;
@@ -163,7 +164,7 @@
         MOUSE {
             bindings = <
 &trans  &kp LC(X)      &kp LC(C)      &kp LC(V)       &kp LG(V)       &kp LG(LS(T))          &trans          &msc SCRL_DOWN  &mm_MUP    &msc SCRL_UP &kp ESCAPE      &trans
-&trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &trans                 &msc SCRL_LEFT  &mm_MLEFT       &mm_MDOWN  &mm_MRIGHT   &msc SCRL_RIGHT &trans
+&trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &bapp                  &msc SCRL_LEFT  &mm_MLEFT       &mm_MDOWN  &mm_MRIGHT   &msc SCRL_RIGHT &trans
 &trans  &kp F1         &kp F2         &kp F3          &kp F4          &kp F5                 &mkp MB1        &mkp MB2        &mkp MB3   &trans       &trans          &trans
 &trans  &trans         &trans         &trans          &trans          &lemmein               &mkp MB3        &mkp MB2        &mkp MB1   &trans       &trans          &trans
             >;
