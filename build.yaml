@@ -21,6 +21,8 @@
 include:
   - board: xiao_ble//zmk
     shield: dabase_v2_dongle
+    snippet: zmk-usb-logging
+    artifact-name: dabase_v2_dongle-usb-log
   - board: xiao_ble//zmk
     shield: dabase_v2_dongle
     snippet: studio-rpc-usb-uart
