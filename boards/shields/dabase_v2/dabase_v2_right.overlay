@@ -5,7 +5,38 @@
  */
 
 #include "dabase_v2.dtsi"
+#include <zephyr/dt-bindings/input/input-event-codes.h>
 
+&pinctrl {
+    i2c0_default: i2c0_default {
+        group1 {
+            psels = <NRF_PSEL(TWIM_SDA, 0, 17)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 20)>;
+        };
+    };
+    i2c0_sleep: i2c0_sleep {
+        group1 {
+            psels = <NRF_PSEL(TWIM_SDA, 0, 17)>,
+                    <NRF_PSEL(TWIM_SCL, 0, 20)>;
+            low-power-enable;
+        };
+    };
+};
+
+&i2c0 {
+    compatible = "nordic,nrf-twim";
+    status = "okay";
+    pinctrl-0 = <&i2c0_default>;
+    pinctrl-1 = <&i2c0_sleep>;
+    pinctrl-names = "default", "sleep";
+    clock-frequency = <100000>;
+
+    trackball: trackball@42 {
+        compatible = "promini,trackpoint-i2c";
+        reg = <0x42>;
+        reset-gpios = <&gpio0 8 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+    };
+};
 
 &default_transform {
     col-offset = <6>;
@@ -29,3 +60,32 @@
         , <&gpio1 6  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
     ;
 };
+
+/ {
+    split_inputs {
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        trackball_split: trackball_split@0 {
+            compatible = "zmk,input-split";
+            reg = <0>;
+        };
+    };
+
+    trackball_listener: trackball_listener {
+        compatible = "zmk,input-listener";
+        status = "disabled";
+        device = <&trackball_split>;
+    };
+};
+
+#ifdef CONFIG_ZMK_SPLIT_ROLE_CENTRAL
+&trackball_listener {
+    device = <&trackball>;
+    status = "okay";
+};
+#else
+&trackball_split {
+    device = <&trackball>;
+};
+#endif
