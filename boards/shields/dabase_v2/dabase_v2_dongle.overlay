@@ -62,6 +62,13 @@
         compatible = "zmk,input-listener";
         status = "okay";
         device = <&trackball_split>;
+        input-processors = <&tp_temp_layer 1 2000>;
+    };
+
+    tp_temp_layer: tp_temp_layer {
+        compatible = "zmk,input-processor-temp-layer";
+        #input-processor-cells = <2>;
+        status = "okay";
     };
 };
 
