@@ -13,7 +13,7 @@ manifest:
       import: app/west.yml
     - name: zmk-pmw3610-driver
       remote: maged
-      revision: 3dd90bdd97c4eb8ddf17771743aebdd2e4953f5e
+      revision: Exp29
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
       revision: main
