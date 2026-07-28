@@ -44,7 +44,7 @@
         compatible = "zmk,combos";
 
         gaming {
-            bindings = <&tog 4>;
+            bindings = <&tog 5>;
             key-positions = <41 42>;
         };
 
@@ -106,7 +106,7 @@
 &trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &kp J              &kp L  &kp U      &kp Y        &kp SEMI  &trans
 &trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M              &kp N  &kp E      &kp I        &kp O     &trans
 &trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    &kp K              &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
-&trans  &trans &kp C_MUTE  &lt 3 TAB  &mo 2  &kp SPACE  /**/    &kp LC(BACKSPACE)  &mo 1  &kp ENTER  &trans       &trans    &trans
+&trans  &trans &kp C_MUTE  &lt 4 TAB  &mo 3  &kp SPACE  /**/    &kp LC(BACKSPACE)  &mo 2  &kp ENTER  &trans       &trans    &trans
             >;
 
             sensor-bindings =
@@ -119,7 +119,7 @@
 &trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &kp J    &kp L     &kp U      &kp Y        &kp SEMI  &trans
 &trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M    &kp N     &kp E      &kp I        &kp O     &trans
 &trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    &kp K    &kp H     &kp COMMA  &kp PERIOD   &kp SLASH &trans
-&trans  &trans &kp C_MUTE  &lt 3 TAB  &mo 2  &kp SPACE  /**/    &mkp MB1 &mkp MB2  &mkp MB3   &trans       &trans    &trans
+&trans  &trans &kp C_MUTE  &lt 4 TAB  &mo 3  &kp SPACE  /**/    &mkp MB1 &mkp MB2  &mkp MB3   &trans       &trans    &trans
             >;
         };
 
