@@ -6,6 +6,7 @@
 
 #include "dabase_v2.dtsi"
 #include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <dt-bindings/zmk/input_transform.h>
 #include <input/processors.dtsi>
 
 &pinctrl {
@@ -83,7 +84,7 @@
 
         scroll_override {
             layers = <6>;
-            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_scaler 1 5>;
+            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform (INPUT_TRANSFORM_X_INVERT | INPUT_TRANSFORM_Y_INVERT)>, <&zip_scroll_scaler 1 5>;
         };
     };
 };
@@ -99,7 +100,7 @@
 
     scroll_override {
         layers = <6>;
-        input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_scaler 1 5>;
+        input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform (INPUT_TRANSFORM_X_INVERT | INPUT_TRANSFORM_Y_INVERT)>, <&zip_scroll_scaler 1 5>;
     };
 };
 #endif
