@@ -6,6 +6,7 @@
 
 #include "dabase_v2.dtsi"
 #include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <input/processors.dtsi>
 
 &pinctrl {
     i2c0_default: i2c0_default {
@@ -79,6 +80,11 @@
         compatible = "zmk,input-listener";
         status = "disabled";
         device = <&trackball_split>;
+
+        scroll_override {
+            layers = <6>;
+            input-processors = <&zip_xy_to_scroll_mapper>;
+        };
     };
 };
 
@@ -90,5 +96,10 @@
 #else
 &trackball_split {
     device = <&trackball>;
+
+    scroll_override {
+        layers = <6>;
+        input-processors = <&zip_xy_to_scroll_mapper>;
+    };
 };
 #endif
