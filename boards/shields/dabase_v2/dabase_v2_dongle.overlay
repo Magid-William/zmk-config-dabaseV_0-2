@@ -6,6 +6,7 @@
 
 #include <dt-bindings/zmk/matrix_transform.h>
 #include "dabase_v2-layouts.dtsi"
+#include <input/processors.dtsi>
 
 / {
     chosen {
@@ -63,6 +64,12 @@
         status = "okay";
         device = <&trackball_split>;
         input-processors = <&tp_temp_layer 1 300>;
+
+        scroll_override {
+            layers = <6>;
+            input-processors = <&zip_xy_to_scroll_mapper>;
+            process-next;
+        };
     };
 
     tp_temp_layer: tp_temp_layer {
