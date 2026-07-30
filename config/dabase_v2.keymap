@@ -103,7 +103,7 @@
 
         default_layer {
             bindings = <
-&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &kp J              &kp L  &kp U      &kp Y        &kp SEMI  &trans
+&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &lt 6 J              &kp L  &kp U      &kp Y        &kp SEMI  &trans
 &trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M              &kp N  &kp E      &kp I        &kp O     &trans
 &trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    &kp K              &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
 &trans  &trans &kp C_MUTE  &lt 4 TAB  &mo 3  &kp SPACE  /**/    &kp LC(BACKSPACE)  &mo 2  &kp ENTER  &trans       &trans    &trans
@@ -147,7 +147,7 @@
 &trans  &kp LC(X)      &kp LC(C)      &kp LC(V)       &kp LG(V)       &kp LG(LS(T))          &trans          &msc SCRL_UP    &mmv MOVE_UP    &msc SCRL_DOWN  &kp ESCAPE      &trans
 &trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &bapp                  &msc SCRL_LEFT  &mmv MOVE_LEFT  &mmv MOVE_DOWN  &mmv MOVE_RIGHT &msc SCRL_RIGHT &trans
 &trans  &kp F1         &kp F2         &kp F3          &kp F4          &kp F5                 &mkp MB1        &mkp MB2        &mkp MB3        &trans          &trans          &trans
-&trans  &trans         &trans         &trans          &trans          &lemmein               &mkp MB3        &mkp MB2        &mkp MB1        &trans          &trans          &trans
+&trans  &trans         &trans         &trans          &trans          &lemmein               &mkp MB1        &mkp MB2        &mkp MB3        &trans          &trans          &trans
             >;
         };
 
