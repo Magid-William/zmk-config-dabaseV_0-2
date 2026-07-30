@@ -116,10 +116,10 @@
 
         tp_layer {
             bindings = <
-&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &mo 6    &kp L     &kp U      &kp Y        &kp SEMI  &trans
-&trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M    &kp N     &kp E      &kp I        &kp O     &trans
-&trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    &kp K    &kp H     &kp COMMA  &kp PERIOD   &kp SLASH &trans
-&trans  &trans &kp C_MUTE  &lt 4 TAB  &mo 3  &kp SPACE  /**/    &mkp MB1 &mkp MB2  &mkp MB3   &trans       &trans    &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans &trans &trans &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans &trans &trans &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans &trans &trans &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2 &mkp MB3 &trans &trans &trans
             >;
         };
 
@@ -153,7 +153,7 @@
 
         gaming {
             bindings = <
-&trans  &mt TAB ESCAPE &kp Q   &kp W        &kp E     &kp R           &mt T Y  &mt U I       &kp UP    &mt O P   &mt L M  &trans
+&trans  &mt TAB ESCAPE &kp Q   &kp W        &kp E     &kp R           &lt 6 Y  &mt U I       &kp UP    &mt O P   &mt L M  &trans
 &trans  &kp CAPS       &kp A   &kp S        &kp D     &kp F           &mt H G  &kp LEFT      &kp DOWN  &kp RIGHT &mt J K  &trans
 &trans  &kp LEFT_SHIFT &kp Z   &kp X        &kp C     &mt B V         &mt B N  &kp N1        &kp N2    &kp N3    &kp N4   &trans
 &trans  &trans         &trans  &kp LEFT_ALT &kp LCTRL &kp SPACE       &kp DEL  &kp BACKSPACE &kp ENTER &trans    &trans   &trans
