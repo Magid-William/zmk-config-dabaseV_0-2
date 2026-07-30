@@ -114,13 +114,8 @@
                 <&scroll_behavior>;
         };
 
-        tp_layer {
-            bindings = <
-&trans &trans &trans &trans &trans &trans /**/ &trans &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2 &mkp MB3 &trans &trans &trans
-            >;
+        extra1 {
+            status = "reserved";
         };
 
         symbol {
@@ -169,8 +164,13 @@
             >;
         };
 
-        extra1 {
-            status = "reserved";
+        tp_layer {
+            bindings = <
+&trans &trans &trans &trans &trans &trans /**/ &trans &trans &trans &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans &trans &trans &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans &trans &trans &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2 &mkp MB3 &trans &trans &trans
+            >;
         };
 
         extra2 {
