@@ -64,7 +64,7 @@
         compatible = "zmk,input-listener";
         status = "okay";
         device = <&trackball_split>;
-        input-processors = <&tp_temp_layer 6 600>;
+        input-processors = <&tp_temp_layer 6 500>;
 
         scroll_override {
             layers = <5>;
