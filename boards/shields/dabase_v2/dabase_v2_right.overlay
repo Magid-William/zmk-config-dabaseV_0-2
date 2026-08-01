@@ -89,8 +89,12 @@
     };
 };
 
-#if defined(CONFIG_ZMK_SPLIT) && CONFIG_ZMK_SPLIT && !defined(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-/* Peripheral (ZMK_SPLIT=y, role central=n): split forwards trackball data to dongle */
+#ifdef CONFIG_ZMK_SPLIT_ROLE_CENTRAL
+&trackball_listener {
+    device = <&trackball>;
+    status = "okay";
+};
+#else
 &trackball_split {
     device = <&trackball>;
 
@@ -98,11 +102,5 @@
         layers = <5>;
         input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>, <&zip_scroll_scaler 1 10>;
     };
-};
-#else
-/* Central or non-split: listener reads trackball directly */
-&trackball_listener {
-    device = <&trackball>;
-    status = "okay";
 };
 #endif
