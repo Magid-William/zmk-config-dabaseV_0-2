@@ -36,8 +36,6 @@
     trackball: trackball@42 {
         compatible = "promini,trackpoint-i2c";
         reg = <0x42>;
-        irq-gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-        reset-gpios = <&gpio0 8 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
         swap-xy;
         speed-scale = <204>;
     };
@@ -104,3 +102,12 @@
     };
 };
 #endif
+
+/ {
+    EXT_POWER {
+        control-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>,   /* PNP base: LOW = VCC to Pro Mini */
+                        <&gpio0 6 GPIO_ACTIVE_HIGH>,  /* NPN base: HIGH = GND to Pro Mini */
+                        <&gpio0 13 GPIO_ACTIVE_HIGH>; /* nice_nano VCC rail switch - keep on */
+        init-delay-ms = <500>;
+    };
+};
