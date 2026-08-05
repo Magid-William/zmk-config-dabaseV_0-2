@@ -4,6 +4,13 @@
 #include <dt-bindings/zmk/pointing.h>
 #include <behaviors/battery_percentage_printer.dtsi>
 
+// Exp50 diag: K triggers &soft_off only in builds with CONFIG_ZMK_PM_SOFT_OFF=y
+#if defined(CONFIG_ZMK_PM_SOFT_OFF)
+#define SOFT_OFF_KEY &soft_off
+#else
+#define SOFT_OFF_KEY &kp K
+#endif
+
 / {
     behaviors {
         scroll_behavior: scroll_behavior {
@@ -105,7 +112,7 @@
             bindings = <
 &trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &lt 5 J              &kp L  &kp U      &kp Y        &kp SEMI  &trans
 &trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M              &kp N  &kp E      &kp I        &kp O     &trans
-&trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    &kp K              &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
+&trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    SOFT_OFF_KEY        &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
 &trans  &trans &kp C_MUTE  &lt 3 TAB  &mo 2  &kp SPACE  /**/    &kp LC(BACKSPACE)  &mo 1  &kp ENTER  &trans       &trans    &trans
             >;
 
