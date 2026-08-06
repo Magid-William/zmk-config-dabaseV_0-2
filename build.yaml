@@ -34,7 +34,7 @@ include:
     artifact-name: dabase_v2_left
   - board: nice_nano//zmk
     shield: dabase_v2_right
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=120000
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=30000
     snippet: zmk-usb-logging
     artifact-name: dabase_v2_right-promini-i2c
   - board: nice_nano//zmk
@@ -44,7 +44,7 @@ include:
     artifact-name: dabase_v2_right-promini-i2c-poweroff
   - board: nice_nano//zmk
     shield: dabase_v2_right
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=120000 -DCONFIG_ZMK_PM_SOFT_OFF=y -DCONFIG_LOG_DEFAULT_LEVEL=4 -DCONFIG_LOG_CMDS=y
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=30000 -DCONFIG_ZMK_PM_SOFT_OFF=y -DCONFIG_LOG_DEFAULT_LEVEL=4 -DCONFIG_LOG_CMDS=y
     snippet: zmk-usb-logging
     artifact-name: dabase_v2_right-promini-i2c-softoff
   - board: nice_nano//zmk
