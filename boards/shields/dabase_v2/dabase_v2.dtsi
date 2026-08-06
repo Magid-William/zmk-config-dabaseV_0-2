@@ -32,6 +32,11 @@
 		wakeup-source;
 	};
 
+	zmk_soft_off_wakeup_sources {
+		compatible = "zmk,soft-off-wakeup-sources";
+		wakeup-sources = <&kscan0>;
+	};
+
 	left_encoder: encoder_left {
         compatible = "alps,ec11";
         a-gpios = <&gpio1 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
