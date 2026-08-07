@@ -8,7 +8,8 @@
 #if defined(CONFIG_ZMK_PM_SOFT_OFF)
 #define SOFT_OFF_KEY &soft_off
 #else
-#define SOFT_OFF_KEY &kp K
+// Exp51: tap K = K, hold K = volume layer 7 (trackpoint tilt -> volume)
+#define SOFT_OFF_KEY &lt 7 K
 #endif
 
 / {
@@ -176,8 +177,15 @@
             >;
         };
 
-        extra1 {
-            status = "reserved";
+        volume_layer {
+            // Exp51: hold K -> this layer. Trackpoint tilt becomes volume (te9no keybind processor).
+            // Everything transparent except MB buttons on thumb cluster (mirrors scroll_layer).
+            bindings = <
+&trans &trans &trans &trans &trans &trans      /**/    &trans &trans &trans &trans &trans &trans
+&trans &trans &trans &trans &trans &trans      /**/    &trans &trans &trans &trans &trans &trans
+&trans &trans &trans &trans &trans &trans      /**/    &trans &trans &trans &trans &trans &trans
+&trans &trans &trans &trans &trans &trans      /**/    &mkp MB1 &mkp MB2  &mkp MB3 &trans &trans &trans
+            >;
         };
 
         extra2 {
