@@ -111,10 +111,10 @@
 
         default_layer {
             bindings = <
-&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &lt 5 J              &kp L  &kp U      &kp Y        &kp SEMI  &trans
-&trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M              &kp N  &kp E      &kp I        &kp O     &trans
+&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &lt 5 J             &kp L  &kp U      &kp Y        &kp SEMI  &trans
+&trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M               &kp N  &kp E      &kp I        &kp O     &trans
 &trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    SOFT_OFF_KEY        &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
-&trans  &trans &kp C_MUTE  &lt 3 TAB  &mo 2  &kp SPACE  /**/    &kp LC(BACKSPACE)  &mo 1  &kp ENTER  &trans       &trans    &trans
+&trans  &trans &kp C_MUTE  &lt 3 TAB  &mo 2  &kp SPACE  /**/    &kp LC(BACKSPACE)   &mo 1  &kp ENTER  &trans       &trans    &trans
             >;
 
             sensor-bindings =
@@ -127,7 +127,7 @@
             bindings = <
 &trans  &kp GRAVE &kp MINUS &kp EQUAL &kp APOS &kp ASTRK                   &arrowfunc  &trans          &kp LS(BACKSLASH)   &kp AMPS        &kp ESC       &trans
 &trans  &kp N1    &kp N2    &kp N3    &kp N4   &kp N5                      &bapp       &kp LEFT_SHIFT  &kp LCTRL           &kp LEFT_ALT    &kp LEFT_WIN  &trans
-&trans  &kp N0    &kp N6    &kp N7    &kp N8   &kp N9                      &sys_reset  &mkp MB2        &kp COMMA           &kp DOT         &kp BACKSLASH &trans
+&trans  &kp N0    &kp N6    &kp N7    &kp N8   &kp N9                      &sys_reset  &trans          &kp COMMA           &kp DOT         &kp BACKSLASH &trans
 &trans  &trans    &trans    &mm_BP    &mm_BP   &mm_RP                      &trans      &trans          &trans              &trans          &trans        &trans
             >;
         };
