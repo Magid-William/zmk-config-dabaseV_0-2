@@ -39,7 +39,7 @@
         compatible = "promini,trackpoint-i2c";
         reg = <0x42>;
         swap-xy;
-        speed-scale = <204>;
+        speed-scale = <102>;
     };
 };
 
