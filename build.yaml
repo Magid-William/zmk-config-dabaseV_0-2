@@ -40,11 +40,6 @@ include:
     artifact-name: dabase_v2_right-promini-i2c
   - board: nice_nano//zmk
     shield: dabase_v2_right
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_EXT_POWER=n
-    snippet: zmk-usb-logging
-    artifact-name: dabase_v2_right-promini-i2c-poweroff
-  - board: nice_nano//zmk
-    shield: dabase_v2_right
     snippet: zmk-usb-logging
     artifact-name: dabase_v2_right-standalone-usb
 
