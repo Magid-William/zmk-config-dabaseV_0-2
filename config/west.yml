@@ -8,6 +8,8 @@ manifest:
       url-base: https://github.com/badjeff
     - name: te9no
       url-base: https://github.com/te9no
+    - name: nrfconnect
+      url-base: https://github.com/nrfconnect
   projects:
     - name: zmk
       remote: zmkfirmware
@@ -27,6 +29,18 @@ manifest:
       revision: main
     - name: zmk-input-processor-keybind
       remote: te9no
+      revision: main
+    - name: sdk-nrf
+      remote: badjeff
+      revision: v3.1-branch+zmk-fixes
+      path: nrf
+    - name: nrfxlib
+      remote: nrfconnect
+      revision: v3.1-branch
+      repo-path: sdk-nrfxlib
+      path: nrfxlib
+    - name: zmk-feature-split-esb
+      remote: badjeff
       revision: main
   self:
     path: config
