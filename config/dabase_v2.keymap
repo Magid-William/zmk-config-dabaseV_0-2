@@ -4,6 +4,14 @@
 #include <dt-bindings/zmk/pointing.h>
 #include <behaviors/battery_percentage_printer.dtsi>
 
+// Exp50 diag: K triggers &soft_off only in builds with CONFIG_ZMK_PM_SOFT_OFF=y
+#if defined(CONFIG_ZMK_PM_SOFT_OFF)
+#define SOFT_OFF_KEY &soft_off
+#else
+// Exp51: tap K = K, hold K = volume layer 7 (trackpoint tilt -> volume)
+#define SOFT_OFF_KEY &lt 7 K
+#endif
+
 / {
     behaviors {
         scroll_behavior: scroll_behavior {
@@ -92,7 +100,7 @@
         switch_to_arabic: switch_to_arabic {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&kp LG(SPACE) &sl 2>;
+            bindings = <&kp LG(SPACE) &sl 1>;
             label = "SWITCH_TO_ARABIC";
         };
     };
@@ -103,10 +111,10 @@
 
         default_layer {
             bindings = <
-&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &kp J              &kp L  &kp U      &kp Y        &kp SEMI  &trans
-&trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M              &kp N  &kp E      &kp I        &kp O     &trans
-&trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    &kp K              &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
-&trans  &trans &kp C_MUTE  &lt 3 TAB  &mo 2  &kp SPACE  /**/    &kp LC(BACKSPACE)  &mo 1  &kp ENTER  &trans       &trans    &trans
+&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &lt 5 J             &kp L  &kp U      &kp Y        &kp SEMI  &trans
+&trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M               &kp N  &kp E      &kp I        &kp O     &trans
+&trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    SOFT_OFF_KEY        &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
+&trans  &trans &kp C_MUTE  &lt 3 TAB  &mo 2  &kp SPACE  /**/    &kp LC(BACKSPACE)   &mo 1  &kp ENTER  &trans       &trans    &trans
             >;
 
             sensor-bindings =
@@ -117,42 +125,67 @@
         symbol {
             label = "sym";
             bindings = <
-&trans  &kp GRAVE &kp MINUS &kp EQUAL &kp APOS &kp ASTRK                   &arrowfunc  &trans          &kp LS(BACKSLASH)   &kp AMPS        &kp ESC       &trans
-&trans  &kp N1    &kp N2    &kp N3    &kp N4   &kp N5                      &bapp       &kp LEFT_SHIFT  &kp LCTRL           &kp LEFT_ALT    &kp LEFT_WIN  &trans
-&trans  &kp N0    &kp N6    &kp N7    &kp N8   &kp N9                      &mkp MB1    &mkp MB2        &kp COMMA           &kp DOT         &kp BACKSLASH &trans
-&trans  &trans    &trans    &mm_BP    &mm_BP   &mm_RP                      &trans      &trans          &trans              &trans          &trans        &trans
+&trans  &kp GRAVE &kp MINUS &kp EQUAL &kp APOS &kp ASTRK   /**/   &arrowfunc  &trans          &kp LS(BACKSLASH)   &kp AMPS        &kp ESC       &trans
+&trans  &kp N1    &kp N2    &kp N3    &kp N4   &kp N5      /**/   &bapp       &kp LEFT_SHIFT  &kp LCTRL           &kp LEFT_ALT    &kp LEFT_WIN  &trans
+&trans  &kp N0    &kp N6    &kp N7    &kp N8   &kp N9      /**/   &sys_reset  &trans          &kp COMMA           &kp DOT         &kp BACKSLASH &trans
+&trans  &trans    &trans    &mm_BP    &mm_BP   &mm_RP      /**/   &trans      &trans          &trans              &trans          &trans        &trans
             >;
         };
 
         ARROWS {
             bindings = <
-&trans &kp LC(X)    &kp LC(C)    &kp LC(V)      &kp LG(V)      &kp LG(LS(T))                    &trans      &kp PG_UP   &kp UP      &kp PG_DN   &kp ESC &trans
-&trans &kp LEFT_GUI &kp LEFT_ALT &kp LCTRL      &kp LEFT_SHIFT &bapp                            &kp HOME    &kp LEFT    &kp DOWN    &kp RIGHT   &kp END &trans
-&trans &kp F6       &kp F7       &kp F8         &kp F9         &kp F10                          &kp F12     &kp F11     &trans      &trans      &trans  &trans
-&trans &trans       &trans       &studio_unlock &trans         &trans                           &kp BSPC    &kp DELETE  &trans      &trans      &trans  &trans
+&trans &kp LC(X)    &kp LC(C)    &kp LC(V)      &kp LG(V)      &kp LG(LS(T))    /**/    &trans      &kp PG_UP   &kp UP      &kp PG_DN   &kp ESC &trans
+&trans &kp LEFT_GUI &kp LEFT_ALT &kp LCTRL      &kp LEFT_SHIFT &kp Y            /**/    &kp HOME    &kp LEFT    &kp DOWN    &kp RIGHT   &kp END &trans
+&trans &kp F6       &kp F7       &kp F8         &kp F9         &kp F10          /**/    &kp F12     &kp F11     &trans      &trans      &trans  &trans
+&trans &trans       &trans       &studio_unlock &trans         &trans           /**/    &kp BSPC    &kp DELETE  &trans      &trans      &trans  &trans
             >;
         };
 
         MOUSE {
             bindings = <
-&trans  &kp LC(X)      &kp LC(C)      &kp LC(V)       &kp LG(V)       &kp LG(LS(T))          &trans          &msc SCRL_UP    &mmv MOVE_UP    &msc SCRL_DOWN  &kp ESCAPE      &trans
-&trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &bapp                  &msc SCRL_LEFT  &mmv MOVE_LEFT  &mmv MOVE_DOWN  &mmv MOVE_RIGHT &msc SCRL_RIGHT &trans
-&trans  &kp F1         &kp F2         &kp F3          &kp F4          &kp F5                 &mkp MB1        &mkp MB2        &mkp MB3        &trans          &trans          &trans
-&trans  &trans         &trans         &trans          &trans          &lemmein               &mkp MB3        &mkp MB2        &mkp MB1        &trans          &trans          &trans
+&trans  &kp LC(X)      &kp LC(C)      &kp LC(V)       &kp LG(V)       &kp LG(LS(T))   /**/   &trans          &msc SCRL_UP    &mmv MOVE_UP    &msc SCRL_DOWN  &kp ESCAPE      &trans
+&trans  &kp LEFT_GUI   &kp LEFT_ALT   &kp LCTRL       &kp LEFT_SHIFT  &bapp           /**/   &msc SCRL_LEFT  &mmv MOVE_LEFT  &mmv MOVE_DOWN  &mmv MOVE_RIGHT &msc SCRL_RIGHT &trans
+&trans  &kp F1         &kp F2         &kp F3          &kp F4          &kp F5          /**/   &trans          &trans          &trans          &trans          &trans          &trans
+&trans  &trans         &trans         &trans          &trans          &lemmein        /**/   &mkp MB1        &mkp MB2        &mkp MB3        &trans          &trans          &trans
             >;
         };
 
         gaming {
             bindings = <
-&trans  &mt TAB ESCAPE &kp Q   &kp W        &kp E     &kp R           &mt T Y  &mt U I       &kp UP    &mt O P   &mt L M  &trans
-&trans  &kp CAPS       &kp A   &kp S        &kp D     &kp F           &mt H G  &kp LEFT      &kp DOWN  &kp RIGHT &mt J K  &trans
-&trans  &kp LEFT_SHIFT &kp Z   &kp X        &kp C     &mt B V         &mt B N  &kp N1        &kp N2    &kp N3    &kp N4   &trans
-&trans  &trans         &trans  &kp LEFT_ALT &kp LCTRL &kp SPACE       &kp DEL  &kp BACKSPACE &kp ENTER &trans    &trans   &trans
+&trans  &mt TAB ESCAPE &kp Q   &kp W        &kp E     &kp R      /**/  &lt 5 Y  &mkp MB2      &kp UP    &mt O P   &mt L M  &trans
+&trans  &kp CAPS       &kp A   &kp S        &kp D     &mt F T    /**/  &mt H G  &kp LEFT      &kp DOWN  &kp RIGHT &mt U I  &trans
+&trans  &kp LEFT_SHIFT &kp Z   &kp X        &kp C     &mt V B    /**/  &mt B N  &kp N1        &kp N2    &kp N3    &kp N4   &trans
+&trans  &trans         &trans  &kp LEFT_ALT &kp LCTRL &kp SPACE  /**/  &kp DEL  &kp BACKSPACE &kp ENTER &trans    &trans   &trans
             >;
         };
 
-        extra1 {
-            status = "reserved";
+        scroll_layer {
+            bindings = <
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2  &mkp MB3 &trans &trans &trans
+            >;
+        };
+
+        tp_layer {
+            bindings = <
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2 &mkp MB3 &trans &trans &trans
+            >;
+        };
+
+        volume_layer {
+            // Exp51: hold K -> this layer. Trackpoint tilt becomes volume (te9no keybind processor).
+            // Everything transparent except MB buttons on thumb cluster (mirrors scroll_layer).
+            bindings = <
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2  &mkp MB3 &trans &trans &trans
+            >;
         };
 
         extra2 {

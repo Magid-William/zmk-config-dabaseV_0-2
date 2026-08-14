@@ -6,6 +6,7 @@ url: https://github.com/Maged-William/zmk-config-dabaseV_0-2
 requires: [pro_micro]
 features:
   - keys
+  - pointing
   - studio
 siblings:
   - dabase_v2_left
