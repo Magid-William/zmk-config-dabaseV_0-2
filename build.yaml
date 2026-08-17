@@ -40,6 +40,7 @@ include:
     artifact-name: dabase_v2_right-promini-i2c
   - board: nice_nano//zmk
     shield: dabase_v2_right
+    cmake-args: -DCONFIG_ZMK_POINTING_SMOOTH_SCROLLING=y
     snippet: zmk-usb-logging
     artifact-name: dabase_v2_right-standalone-usb
 
