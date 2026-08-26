@@ -152,8 +152,8 @@
 
         gaming {
             bindings = <
-&trans  &mt TAB ESCAPE &kp Q   &kp W        &kp E     &kp R      /**/  &lt 5 Y  &mkp MB2      &kp UP    &mt O P   &mt L M  &trans
-&trans  &kp CAPS       &kp A   &kp S        &kp D     &mt F T    /**/  &mt H G  &kp LEFT      &kp DOWN  &kp RIGHT &mt U I  &trans
+&trans  &mt TAB ESCAPE &kp Q   &kp W        &kp E     &kp R      /**/  &lt 5 Y  &mkp MB2      &kp UP    &mt O P   &mt M L  &trans
+&trans  &kp CAPS       &kp A   &kp S        &kp D     &mt F T    /**/  &mt G H  &kp LEFT      &kp DOWN  &kp RIGHT &mt U I  &trans
 &trans  &kp LEFT_SHIFT &kp Z   &kp X        &kp C     &mt V B    /**/  &mt B N  &kp N1        &kp N2    &kp N3    &kp N4   &trans
 &trans  &trans         &trans  &kp LEFT_ALT &kp LCTRL &kp SPACE  /**/  &kp DEL  &kp BACKSPACE &kp ENTER &trans    &trans   &trans
             >;
@@ -161,10 +161,10 @@
 
         scroll_layer {
             bindings = <
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2  &mkp MB3 &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans       &trans    &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans       &trans    &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &sys_reset   &trans    &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1     &mkp MB2  &mkp MB3 &trans &trans &trans
             >;
         };
 
