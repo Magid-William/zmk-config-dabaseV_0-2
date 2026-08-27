@@ -40,7 +40,10 @@
         reg = <0x42>;
         irq-gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
         swap-xy;
-        speed-scale = <128>;
+        /* Exp67: sens 128 (0.5x) felt "heavy" at Windows pointer speed 10;
+         * best was Windows 15 (2.25x OS multiplier). Doubling sens to 255 (~2x)
+         * moves that compensation into the keyboard so Windows stays at 10. */
+        speed-scale = <255>;
         curve-rate = <18>;
         curve-exponent = <256>;
         curve-start = <77>;
