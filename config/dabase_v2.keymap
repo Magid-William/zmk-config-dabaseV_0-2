@@ -4,14 +4,6 @@
 #include <dt-bindings/zmk/pointing.h>
 #include <behaviors/battery_percentage_printer.dtsi>
 
-// Exp50 diag: K triggers &soft_off only in builds with CONFIG_ZMK_PM_SOFT_OFF=y
-#if defined(CONFIG_ZMK_PM_SOFT_OFF)
-#define SOFT_OFF_KEY &soft_off
-#else
-// Exp51: tap K = K, hold K = volume layer 7 (trackpoint tilt -> volume)
-#define SOFT_OFF_KEY &lt 7 K
-#endif
-
 / {
     behaviors {
         scroll_behavior: scroll_behavior {
@@ -111,9 +103,9 @@
 
         default_layer {
             bindings = <
-&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &lt 5 J             &kp L  &kp U      &kp Y        &kp SEMI  &trans
+&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &kp J               &kp L  &kp U      &kp Y        &kp SEMI  &trans
 &trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M               &kp N  &kp E      &kp I        &kp O     &trans
-&trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    SOFT_OFF_KEY        &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
+&trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    &kp K               &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
 &trans  &trans &kp C_MUTE  &lt 3 TAB  &mo 2  &kp SPACE  /**/    &kp LC(BACKSPACE)   &mo 1  &kp ENTER  &trans       &trans    &trans
             >;
 
@@ -152,39 +144,10 @@
 
         gaming {
             bindings = <
-&trans  &mt TAB ESCAPE &kp Q   &kp W        &kp E     &kp R      /**/  &lt 5 Y  &mkp MB2      &kp UP    &mt O P   &mt M L  &trans
+&trans  &mt TAB ESCAPE &kp Q   &kp W        &kp E     &kp R      /**/  &kp Y      &mkp MB2      &kp UP    &mt O P   &mt M L  &trans
 &trans  &kp CAPS       &kp A   &kp S        &kp D     &mt F T    /**/  &mt G H  &kp LEFT      &kp DOWN  &kp RIGHT &mt U I  &trans
 &trans  &kp LEFT_SHIFT &kp Z   &kp X        &kp C     &mt V B    /**/  &mt B N  &kp N1        &kp N2    &kp N3    &kp N4   &trans
 &trans  &trans         &trans  &kp LEFT_ALT &kp LCTRL &kp SPACE  /**/  &kp DEL  &kp BACKSPACE &kp ENTER &trans    &trans   &trans
-            >;
-        };
-
-        scroll_layer {
-            bindings = <
-&trans &trans &trans &trans &trans &trans /**/ &trans       &trans    &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans       &trans    &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &sys_reset   &trans    &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &mkp MB1     &mkp MB2  &mkp MB3 &trans &trans &trans
-            >;
-        };
-
-        tp_layer {
-            bindings = <
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2 &mkp MB3 &trans &trans &trans
-            >;
-        };
-
-        volume_layer {
-            // Exp51: hold K -> this layer. Trackpoint tilt becomes volume (te9no keybind processor).
-            // Everything transparent except MB buttons on thumb cluster (mirrors scroll_layer).
-            bindings = <
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans    &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2  &mkp MB3 &trans &trans &trans
             >;
         };
 

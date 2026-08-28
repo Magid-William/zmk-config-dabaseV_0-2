@@ -6,27 +6,21 @@ manifest:
       url-base: https://github.com/Magid-William
     - name: badjeff
       url-base: https://github.com/badjeff
-    - name: te9no
-      url-base: https://github.com/te9no
   projects:
     - name: zmk
       remote: zmkfirmware
-      revision: fa33e35f11d2b15311973cda9fb89dcd2376888c
+      revision: ac7f75b8
       import: app/west.yml
-    - name: zmk-trackpoint-driver
+
+    # Exp69 fresh: direct PS/2 on the right half (gpio-ps2 backend,
+    # NO_HOST_COMMANDS) replaces the promini,trackpoint-i2c (ATtiny/Pro Mini)
+    # coprocessor path.
+    - name: zmk-ps2-trackpoint-driver
       remote: maged
-      revision: e5234665db3ecc88c6fc1108a0b4214103b6f27e
+      revision: 5ef6699e6a6f500969ef3dbbbfefbad2aa011380
+
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
-      revision: main
-    - name: zmk-input-processor-report-rate-limit
-      remote: badjeff
-      revision: main
-    - name: zmk-input-processor-xyz
-      remote: badjeff
-      revision: main
-    - name: zmk-input-processor-keybind
-      remote: te9no
       revision: main
   self:
     path: config

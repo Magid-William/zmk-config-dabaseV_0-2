@@ -33,14 +33,15 @@ include:
     cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=900000
     snippet: zmk-usb-logging
     artifact-name: dabase_v2_left
+  # Exp69 fresh: direct PS/2 right half as BLE peripheral (no sleep for bring-up)
   - board: nice_nano//zmk
     shield: dabase_v2_right
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=900000
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n
     snippet: zmk-usb-logging
-    artifact-name: dabase_v2_right-promini-i2c
+    artifact-name: dabase_v2_right-ps2-direct
+  # Exp69 fresh: standalone USB right half (flash FIRST — defaults role central)
   - board: nice_nano//zmk
     shield: dabase_v2_right
-    cmake-args: -DCONFIG_ZMK_POINTING_SMOOTH_SCROLLING=y
     snippet: zmk-usb-logging
     artifact-name: dabase_v2_right-standalone-usb
 
