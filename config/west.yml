@@ -22,7 +22,7 @@ manifest:
     # Exp74: + on-device PowerCurve (curve-sens/rate/exponent/start DT props).
     - name: zmk-ps2-trackpoint-driver
       remote: maged
-      revision: b186d0234cca1a9ddd89c2d73ada519f1ed3b335
+      revision: b8a2200b0b6187c4c0653b9bb68f4d1d87652594
 
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
