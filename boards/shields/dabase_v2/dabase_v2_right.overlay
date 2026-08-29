@@ -12,6 +12,16 @@
 #include <dt-bindings/zmk/keys.h>
 #include <behaviors.dtsi>
 
+/* Exp71: direction fix - the TP's sensor axes are rotated vs the mount
+ * (nub up -> cursor left, nub left -> cursor up). Apply the inverse in
+ * software: XY_SWAP | X_INVERT | Y_INVERT computes (-y, -x). The TP rejects
+ * host commands, so its register invert/swap bits are no-ops. The transform
+ * runs on the right half before split-forward (peripheral) or before HID
+ * (standalone-central listener).
+ */
+#include <input/processors.dtsi>
+#include <dt-bindings/zmk/input_transform.h>
+
 &default_transform {
     col-offset = <6>;
 };
@@ -57,11 +67,17 @@
 /* standalone USB right half (or local central): listen to the direct-PS2 TP */
 &trackball_listener {
     status = "okay";
+    input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP
+                        | INPUT_TRANSFORM_X_INVERT | INPUT_TRANSFORM_Y_INVERT)>;
 };
 #else
-/* BLE peripheral: forward direct-PS2 input to the central (dongle) */
+/* BLE peripheral: forward direct-PS2 input to the central (dongle).
+ * The split node runs its input-processors BEFORE forwarding, so the
+ * corrected events land on the dongle (no dongle-side change needed). */
 &trackball_split {
     device = <&tpoint0>;
+    input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP
+                        | INPUT_TRANSFORM_X_INVERT | INPUT_TRANSFORM_Y_INVERT)>;
 };
 #endif
 
