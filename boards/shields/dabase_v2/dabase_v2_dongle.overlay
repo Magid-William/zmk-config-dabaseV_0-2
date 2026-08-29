@@ -5,6 +5,8 @@
  *
  * Exp69 fresh: plain pointer listener on trackball_split — no
  * temp_layer / scroll / volume input processors (cursor-only bring-up).
+ * Exp72: + temp_layer layer-toggle (tp_layer = MB1/MB2/MB3 on right thumb),
+ * 500 ms idle timeout, as in origin/main.
  */
 
 #include <dt-bindings/zmk/keys.h>
@@ -67,6 +69,17 @@
         compatible = "zmk,input-listener";
         status = "okay";
         device = <&trackball_split>;
+        /* Exp72: touch the TP -> layer 5 (tp_layer) for 500 ms idle timeout,
+         * giving MB1/MB2/MB3 on the right thumb cluster. Mirrors origin/main
+         * (which used `<&tp_temp_layer 6 500>` on a 9-layer keymap; here
+         * tp_layer is index 5 because scroll/volume layers aren't ported). */
+        input-processors = <&tp_temp_layer 5 500>;
+    };
+
+    tp_temp_layer: tp_temp_layer {
+        compatible = "zmk,input-processor-temp-layer";
+        #input-processor-cells = <2>;
+        status = "okay";
     };
 };
 

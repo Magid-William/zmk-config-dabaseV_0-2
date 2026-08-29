@@ -151,6 +151,18 @@
             >;
         };
 
+        // Exp72: layer-toggle layer — auto-actives on TP touch (temp_layer
+        // input processor on the dongle listener). All transparent except
+        // mouse buttons on the right thumb cluster (mirrors origin/main).
+        tp_layer {
+            bindings = <
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2 &mkp MB3 &trans &trans &trans
+            >;
+        };
+
         extra2 {
             status = "reserved";
         };
