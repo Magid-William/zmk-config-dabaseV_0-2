@@ -181,10 +181,10 @@
         // except thumb MB1/2/3 (mirrors scroll_layer).
         volume_layer {
             bindings = <
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2 &mkp MB3 &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &sys_reset   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans       &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans       &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1     &mkp MB2 &mkp MB3 &trans &trans &trans
             >;
         };
     };
