@@ -82,8 +82,8 @@
         /* Exp73: hold J (layer 6) -> trackpoint tilt becomes scroll.
          * Y-invert matches the natural-up mapping; process-next keeps the
          * touch-toggle (tp_temp_layer) active so MB1/2/3 work while
-         * scroll-holding. Scaling tuned later if needed (direct-PS2 raw
-         * deltas are larger than the old PowerCurve'd I2C stream). */
+         * scroll-holding. Exp74: deltas are PowerCurve-shaped on the right
+         * half again (sens 0.5x), so 1:2 may need retuning. */
         scroll_override {
             layers = <6>;
             input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>, <&zip_scroll_scaler 1 2>;

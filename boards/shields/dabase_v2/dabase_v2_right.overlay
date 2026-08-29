@@ -12,6 +12,18 @@
 #include <dt-bindings/zmk/keys.h>
 #include <behaviors.dtsi>
 
+/* Exp74: on-device PowerCurve (RawAccel-style, ported from the AVR library).
+ * Same tuning as the coprocessor era (Exp60/61 known-good): sens 0.5x,
+ * rate 0.070, exp 1.0, start 0.30 -> slow nudge < 1x gain (precise crawl),
+ * fast flick > 1x. curve-rate != 0 = curve enabled (driver default is off).
+ * Tuning = edit these, rebuild the right half, flash (like the old I2C path). */
+&tpoint0 {
+    curve-sens = <128>;
+    curve-rate = <18>;
+    curve-exponent = <256>;
+    curve-start = <77>;
+};
+
 /* Exp71: direction fix - the TP's sensor axes are rotated vs the mount
  * (nub up -> cursor left, nub left -> cursor up). Apply the inverse in
  * software. Iteration 1 was swap+invert-both (=7) which OVER-corrected
