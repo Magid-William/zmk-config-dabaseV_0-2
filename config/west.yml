@@ -6,6 +6,8 @@ manifest:
       url-base: https://github.com/Magid-William
     - name: badjeff
       url-base: https://github.com/badjeff
+    - name: te9no
+      url-base: https://github.com/te9no
   projects:
     - name: zmk
       remote: zmkfirmware
@@ -23,6 +25,14 @@ manifest:
 
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
+      revision: main
+
+    # Exp73: hold K -> trackpoint tilt becomes volume via te9no's
+    # keybind input-processor (Exp51 pattern). The keybind_volume node is
+    # defined inline in the dongle overlay (NOT via the module's dtsi,
+    # which pulls a missing dt-bindings header).
+    - name: zmk-input-processor-keybind
+      remote: te9no
       revision: main
   self:
     path: config

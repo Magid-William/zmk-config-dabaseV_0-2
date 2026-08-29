@@ -103,9 +103,9 @@
 
         default_layer {
             bindings = <
-&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &kp J               &kp L  &kp U      &kp Y        &kp SEMI  &trans
+&trans  &kp Q  &kp W       &kp F      &kp P  &kp B      /**/    &lt 6 J             &kp L  &kp U      &kp Y        &kp SEMI  &trans
 &trans  &kp A  &kp S       &kp R      &kp T  &kp G      /**/    &kp M               &kp N  &kp E      &kp I        &kp O     &trans
-&trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    &kp K               &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
+&trans  &kp Z  &kp X       &kp C      &kp D  &kp V      /**/    &lt 7 K             &kp H  &kp COMMA  &kp PERIOD   &kp SLASH &trans
 &trans  &trans &kp C_MUTE  &lt 3 TAB  &mo 2  &kp SPACE  /**/    &kp LC(BACKSPACE)   &mo 1  &kp ENTER  &trans       &trans    &trans
             >;
 
@@ -163,12 +163,29 @@
             >;
         };
 
-        extra2 {
-            status = "reserved";
+        // Exp73: hold J -> scroll_layer (6). Transparent except MB1/2/3 on
+        // the right thumb cluster so click-while-scrolling still works
+        // (mirrors Exp32/Exp51). The actual scroll mapping lives on the
+        // dongle listener's scroll_override (input processors, not keys).
+        scroll_layer {
+            bindings = <
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2 &mkp MB3 &trans &trans &trans
+            >;
         };
 
-        extra3 {
-            status = "reserved";
+        // Exp73: hold K -> volume_layer (7). Trackpoint tilt becomes volume
+        // (te9no keybind processor on the dongle listener). Transparent
+        // except thumb MB1/2/3 (mirrors scroll_layer).
+        volume_layer {
+            bindings = <
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2 &mkp MB3 &trans &trans &trans
+            >;
         };
     };
 };

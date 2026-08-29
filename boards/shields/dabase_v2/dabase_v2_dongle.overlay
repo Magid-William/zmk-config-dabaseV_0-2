@@ -7,12 +7,16 @@
  * temp_layer / scroll / volume input processors (cursor-only bring-up).
  * Exp72: + temp_layer layer-toggle (tp_layer = MB1/MB2/MB3 on right thumb),
  * 500 ms idle timeout, as in origin/main.
+ * Exp73: + scroll-layer-toggle (hold J, layer 6) + volume-layer-toggle
+ * (hold K, layer 7) via layer-specific input-processor overrides.
  */
 
 #include <dt-bindings/zmk/keys.h>
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <dt-bindings/zmk/input_transform.h>
 #include "dabase_v2-layouts.dtsi"
+#include <input/processors.dtsi>
 
 / {
     chosen {
@@ -74,12 +78,59 @@
          * (which used `<&tp_temp_layer 6 500>` on a 9-layer keymap; here
          * tp_layer is index 5 because scroll/volume layers aren't ported). */
         input-processors = <&tp_temp_layer 5 500>;
+
+        /* Exp73: hold J (layer 6) -> trackpoint tilt becomes scroll.
+         * Y-invert matches the natural-up mapping; process-next keeps the
+         * touch-toggle (tp_temp_layer) active so MB1/2/3 work while
+         * scroll-holding. Scaling tuned later if needed (direct-PS2 raw
+         * deltas are larger than the old PowerCurve'd I2C stream). */
+        scroll_override {
+            layers = <6>;
+            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>, <&zip_scroll_scaler 1 2>;
+            process-next;
+        };
+
+        /* Exp73: hold K (layer 7) -> trackpoint tilt becomes volume.
+         * Y-invert so up = louder (mirrors scroll/Exp51). Keybind override
+         * first (process-next), then scale X/Y to 0 so the cursor stays put
+         * on layer 7 (Exp51 lesson: the zero scaler without process-next is
+         * what actually eats the leftover movement — the keybind's STOP is
+         * honored only because volume_move_zero has no process-next). */
+        volume_override {
+            layers = <7>;
+            input-processors = <&zip_xy_transform INPUT_TRANSFORM_Y_INVERT>, <&keybind_volume>;
+            process-next;
+        };
+
+        volume_move_zero {
+            layers = <7>;
+            input-processors = <&zip_xy_scaler 0 1>;
+        };
     };
 
     tp_temp_layer: tp_temp_layer {
         compatible = "zmk,input-processor-temp-layer";
         #input-processor-cells = <2>;
         status = "okay";
+    };
+
+    /* Exp73: volume keybind — defined inline (the module's own dtsi pulls
+     * <dt-bindings/zmk/input-processor-keybind.h>, missing from ZMK + the
+     * module). Bindings order is [RIGHT, LEFT, DOWN, UP] per press_work_cb:
+     * X mapped to &none so only Y produces volume. tick 32 = very slow,
+     * ~3x slower than scroll (Exp51 tuning). */
+    keybind_volume: keybind_volume {
+        compatible = "zmk,input-processor-keybind";
+        #input-processor-cells = <0>;
+        mode = <0>;
+        track_remainders;
+        bindings = <&none>, <&none>, <&kp C_VOLUME_DOWN>, <&kp C_VOLUME_UP>;
+        tick = <32>;
+        wait-ms = <10>;
+        tap-ms = <12>;
+        threshold = <1>;
+        max_threshold = <512>;
+        max_pending_activations = <2>;
     };
 };
 
