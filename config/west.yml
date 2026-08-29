@@ -19,9 +19,10 @@ manifest:
     # per-axis report-interval accumulator fix + it3 printk stream + it4
     # read-timeout off the system workqueue + ISR-safe logging + it4c 8ms
     # clock-pause tolerance (this TP pauses mid-byte; AVR needed 7.5ms).
+    # Exp74: + on-device PowerCurve (curve-sens/rate/exponent/start DT props).
     - name: zmk-ps2-trackpoint-driver
       remote: maged
-      revision: 5fbc21f
+      revision: 3aadda2
 
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
