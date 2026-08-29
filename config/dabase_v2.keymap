@@ -169,10 +169,10 @@
         // dongle listener's scroll_override (input processors, not keys).
         scroll_layer {
             bindings = <
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &trans   &trans   &trans   &trans &trans &trans
-&trans &trans &trans &trans &trans &trans /**/ &mkp MB1 &mkp MB2 &mkp MB3 &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans       &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &trans       &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &sys_reset   &trans   &trans   &trans &trans &trans
+&trans &trans &trans &trans &trans &trans /**/ &mkp MB1     &mkp MB2 &mkp MB3 &trans &trans &trans
             >;
         };
 
