@@ -14,11 +14,11 @@ manifest:
 
     # Exp70: direct PS/2 on the right half (gpio-ps2 backend,
     # NO_HOST_COMMANDS). Driver Exp70 = +4096 cb-workqueue stack + no-resend +
-    # per-axis report-interval accumulator fix + it3 printk stream (telemetry +
-    # per-packet/abort lines).
+    # per-axis report-interval accumulator fix + it3 printk stream + it4
+    # read-timeout off the system workqueue + ISR-safe abort logging.
     - name: zmk-ps2-trackpoint-driver
       remote: maged
-      revision: ea1836e
+      revision: 4d8fe3c
 
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
