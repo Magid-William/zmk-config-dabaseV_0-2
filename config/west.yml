@@ -13,11 +13,11 @@ manifest:
       import: app/west.yml
 
     # Exp70: direct PS/2 on the right half (gpio-ps2 backend,
-    # NO_HOST_COMMANDS). Driver Exp70 = +4096 cb-workqueue stack (right-half
-    # hardfault on TP touch fixed) + PS2_GPIO_NO_RESEND (no 0xFE writes).
+    # NO_HOST_COMMANDS). Driver Exp70 = +4096 cb-workqueue stack + no-resend +
+    # per-axis report-interval accumulator fix.
     - name: zmk-ps2-trackpoint-driver
       remote: maged
-      revision: d971d8d
+      revision: 809cf98
 
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
