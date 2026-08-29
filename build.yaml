@@ -36,7 +36,7 @@ include:
   # Exp69 fresh: direct PS/2 right half as BLE peripheral (no sleep for bring-up)
   - board: nice_nano
     shield: dabase_v2_right
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SPLIT_BLE_PERIPHERAL_STACK_SIZE=2048
     snippet: zmk-usb-logging
     artifact-name: dabase_v2_right-ps2-direct
   # Exp69 fresh: standalone USB right half (flash FIRST — defaults role central)
