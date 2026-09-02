@@ -20,9 +20,11 @@ manifest:
     # read-timeout off the system workqueue + ISR-safe logging + it4c 8ms
     # clock-pause tolerance (this TP pauses mid-byte; AVR needed 7.5ms).
     # Exp74: + on-device PowerCurve (curve-sens/rate/exponent/start DT props).
+    # Exp77: + single-packet magnitude jump filter
+    # (ZMK_INPUT_MOUSE_PS2_DELTA_MAX, on via dabase_v2_right.conf).
     - name: zmk-ps2-trackpoint-driver
       remote: maged
-      revision: b8a2200b0b6187c4c0653b9bb68f4d1d87652594
+      revision: 49065fb4e48efa8a8ed84decfcbed04146b183bd
 
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
