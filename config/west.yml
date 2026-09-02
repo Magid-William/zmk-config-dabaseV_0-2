@@ -24,7 +24,7 @@ manifest:
     # (ZMK_INPUT_MOUSE_PS2_DELTA_MAX, on via dabase_v2_right.conf).
     - name: zmk-ps2-trackpoint-driver
       remote: maged
-      revision: 49065fb4e48efa8a8ed84decfcbed04146b183bd
+      revision: 75d4d719c7702a419b2750194cabda636cd3969b
 
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
