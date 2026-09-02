@@ -6,7 +6,7 @@
  * Exp69 fresh: plain pointer listener on trackball_split — no
  * temp_layer / scroll / volume input processors (cursor-only bring-up).
  * Exp72: + temp_layer layer-toggle (tp_layer = MB1/MB2/MB3 on right thumb),
- * 500 ms idle timeout, as in origin/main.
+ * 400 ms idle timeout, as in origin/main.
  * Exp73: + scroll-layer-toggle (hold J, layer 6) + volume-layer-toggle
  * (hold K, layer 7) via layer-specific input-processor overrides.
  */
@@ -73,11 +73,11 @@
         compatible = "zmk,input-listener";
         status = "okay";
         device = <&trackball_split>;
-        /* Exp72: touch the TP -> layer 5 (tp_layer) for 500 ms idle timeout,
+        /* Exp72: touch the TP -> layer 5 (tp_layer) for 400 ms idle timeout,
          * giving MB1/MB2/MB3 on the right thumb cluster. Mirrors origin/main
-         * (which used `<&tp_temp_layer 6 500>` on a 9-layer keymap; here
+         * (which used `<&tp_temp_layer 6 400>` on a 9-layer keymap; here
          * tp_layer is index 5 because scroll/volume layers aren't ported). */
-        input-processors = <&tp_temp_layer 5 500>;
+        input-processors = <&tp_temp_layer 5 400>;
 
         /* Exp73: hold J (layer 6) -> trackpoint tilt becomes scroll.
          * Y-invert matches the natural-up mapping; process-next keeps the
