@@ -38,6 +38,17 @@
 
             mods = <(MOD_LCTL|MOD_RCTL)>;
         };
+
+        // Manual "go to sleep" for the two halves. split-peripheral-off-on-press
+        // powers a half off immediately on key-press; the long hold-time keeps the
+        // dongle (central) awake - it never receives the release event from a half
+        // that has already powered down.
+        sleep_halves: sleep_halves {
+            compatible = "zmk,behavior-soft-off";
+            #binding-cells = <0>;
+            split-peripheral-off-on-press;
+            hold-time-ms = <60000>;
+        };
     };
 
     combos {
@@ -71,6 +82,20 @@
         hophopclick2 {
             bindings = <&kp LG(LA(C))>;
             key-positions = <32 33>;
+        };
+
+        // Manual sleep before bed: left hand Q+P, right hand ;+L.
+        // (Q=1 P=4, L=7 ;=10 in the transform order.)
+        sleep_left {
+            bindings = <&sleep_halves>;
+            key-positions = <1 4>;
+            timeout-ms = <50>;
+        };
+
+        sleep_right {
+            bindings = <&sleep_halves>;
+            key-positions = <7 10>;
+            timeout-ms = <50>;
         };
     };
 

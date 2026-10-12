@@ -52,3 +52,16 @@
     transform = <&default_transform>;
     kscan = <&kscan0>;
 };
+
+/*
+ * Always-on keyboard (CONFIG_ZMK_SLEEP=n): deep sleep is manual, via the
+ * &soft_off sleep combos. Listing kscan0 here re-enables it as a wake source
+ * during soft off, so pressing any key wakes the half (behaves like deep
+ * sleep - no reset button needed).
+ */
+/ {
+    soft_off_wakers {
+        compatible = "zmk,soft-off-wakeup-sources";
+        wakeup-sources = <&kscan0>;
+    };
+};
