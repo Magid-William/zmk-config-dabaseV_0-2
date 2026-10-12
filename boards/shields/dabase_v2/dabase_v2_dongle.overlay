@@ -9,6 +9,7 @@
  * 400 ms idle timeout, as in origin/main.
  * Exp73: + scroll-layer-toggle (hold J, layer 6) + volume-layer-toggle
  * (hold K, layer 7) via layer-specific input-processor overrides.
+ * Exp78: tp_temp_layer idle timeout 400 -> 10 ms (layer only while moving).
  */
 
 #include <dt-bindings/zmk/keys.h>
@@ -73,11 +74,14 @@
         compatible = "zmk,input-listener";
         status = "okay";
         device = <&trackball_split>;
-        /* Exp72: touch the TP -> layer 5 (tp_layer) for 400 ms idle timeout,
-         * giving MB1/MB2/MB3 on the right thumb cluster. Mirrors origin/main
-         * (which used `<&tp_temp_layer 6 400>` on a 9-layer keymap; here
-         * tp_layer is index 5 because scroll/volume layers aren't ported). */
-        input-processors = <&tp_temp_layer 5 400>;
+        /* Exp72/Exp78: touch the TP -> layer 5 (tp_layer), giving MB1/MB2/MB3
+         * on the right thumb cluster. Mirrors origin/main, which used
+         * `<&tp_temp_layer 6 400>` (9-layer keymap; tp_layer is index 5 here).
+         * Exp78: idle timeout 400 -> 10 ms so the layer only stays up while
+         * the TP is actually being moved (no ~0.4 s linger after letting go).
+         * NB: the processor special-cases 0 as "no auto-release" (layer
+         * sticks), so 10 ms is used instead of a literal 0. */
+        input-processors = <&tp_temp_layer 5 10>;
 
         /* Exp73: hold J (layer 6) -> trackpoint tilt becomes scroll.
          * Y-invert matches the natural-up mapping; process-next keeps the
