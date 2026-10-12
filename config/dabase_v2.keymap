@@ -72,27 +72,6 @@
             bindings = <&kp LG(LA(C))>;
             key-positions = <32 33>;
         };
-
-        // Manual sleep before bed: left hand Q+P, right hand ;+L.
-        // (Q=1 P=4, L=7 ;=10 in the transform order.)
-        // slow-release: the behavior releases only after BOTH keys are up, so
-        // the halves enter soft-off with an idle matrix (a held key would block
-        // the kscan wake source). &halfoff comes from the shield files:
-        // dabase_v2.dtsi (halves, sleep on release) / dabase_v2_dongle.overlay
-        // (central, stays awake).
-        sleep_left {
-            bindings = <&halfoff>;
-            key-positions = <1 4>;
-            timeout-ms = <50>;
-            slow-release;
-        };
-
-        sleep_right {
-            bindings = <&halfoff>;
-            key-positions = <7 10>;
-            timeout-ms = <50>;
-            slow-release;
-        };
     };
 
     macros {
