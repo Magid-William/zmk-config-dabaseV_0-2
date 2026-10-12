@@ -134,6 +134,23 @@
     };
 };
 
+/ {
+    behaviors {
+        // Central (dongle): the sleep combos must never power the dongle off -
+        // it only relays the behavior to the halves. split-peripheral-off-on-press
+        // is inert here; hold-time-ms keeps the dongle awake when the combo
+        // releases (a few hundred ms later, far under the threshold).
+        // NOTE: name is sent over the BLE split link, so it must be <= 8 chars;
+        // it must also match the halves' node name.
+        halfoff: halfoff {
+            compatible = "zmk,behavior-soft-off";
+            #binding-cells = <0>;
+            split-peripheral-off-on-press;
+            hold-time-ms = <60000>;
+        };
+    };
+};
+
 &dabase_layout {
     transform = <&mock_transform>;
 };

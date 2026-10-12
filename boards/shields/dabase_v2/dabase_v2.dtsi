@@ -64,4 +64,17 @@
         compatible = "zmk,soft-off-wakeup-sources";
         wakeup-sources = <&kscan0>;
     };
+
+    behaviors {
+        // Peripheral half: sleep on key RELEASE (hold-time-ms = 0, no
+        // split-peripheral-off-on-press). Entering soft off while the combo keys
+        // are still held leaves the kscan wake line latched, so the half would
+        // only wake via the RST button; releasing first keeps the matrix idle.
+        // Name must be <= 8 chars - it is sent over the BLE split link.
+        halfoff: halfoff {
+            compatible = "zmk,behavior-soft-off";
+            #binding-cells = <0>;
+            hold-time-ms = <0>;
+        };
+    };
 };

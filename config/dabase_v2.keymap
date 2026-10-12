@@ -38,19 +38,6 @@
 
             mods = <(MOD_LCTL|MOD_RCTL)>;
         };
-
-        // Manual "go to sleep" for the two halves. split-peripheral-off-on-press
-        // powers a half off immediately on key-press; the long hold-time keeps the
-        // dongle (central) awake (it releases the combo only when the split link
-        // drops ~seconds later, well under the hold-time).
-        // NOTE: name must be <= 8 chars - it is sent over the BLE split link in
-        // a 9-byte field (ZMK_SPLIT_RUN_BEHAVIOR_DEV_LEN), truncating longer names.
-        halfoff: halfoff {
-            compatible = "zmk,behavior-soft-off";
-            #binding-cells = <0>;
-            split-peripheral-off-on-press;
-            hold-time-ms = <60000>;
-        };
     };
 
     combos {
@@ -88,16 +75,23 @@
 
         // Manual sleep before bed: left hand Q+P, right hand ;+L.
         // (Q=1 P=4, L=7 ;=10 in the transform order.)
+        // slow-release: the behavior releases only after BOTH keys are up, so
+        // the halves enter soft-off with an idle matrix (a held key would block
+        // the kscan wake source). &halfoff comes from the shield files:
+        // dabase_v2.dtsi (halves, sleep on release) / dabase_v2_dongle.overlay
+        // (central, stays awake).
         sleep_left {
             bindings = <&halfoff>;
             key-positions = <1 4>;
             timeout-ms = <50>;
+            slow-release;
         };
 
         sleep_right {
             bindings = <&halfoff>;
             key-positions = <7 10>;
             timeout-ms = <50>;
+            slow-release;
         };
     };
 
