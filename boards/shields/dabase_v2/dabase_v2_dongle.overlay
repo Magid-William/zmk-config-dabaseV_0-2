@@ -10,6 +10,7 @@
  * Exp73: + scroll-layer-toggle (hold J, layer 6) + volume-layer-toggle
  * (hold K, layer 7) via layer-specific input-processor overrides.
  * Exp78: tp_temp_layer idle timeout 400 -> 50 ms (layer only while moving).
+ * Exp80 tuning: idle timeout 50 -> 150 ms (holds through slow motion).
  */
 
 #include <dt-bindings/zmk/keys.h>
@@ -79,13 +80,13 @@
          * `<&tp_temp_layer 6 400>` (9-layer keymap; tp_layer is index 5 here).
          * Exp78: idle timeout 400 -> 50 ms so the layer only stays up while
          * the TP is actually being moved (no ~0.4 s linger after letting go).
+         * Exp80 tuning: 50 -> 150 ms. 50 ms sat right at the inter-event gap,
+         * so slow or short motion dropped the layer mid-stroke; 150 ms holds
+         * it through a normal pause between nudges yet still drops it long
+         * before a thumb keypress, so MB1/2/3 stay reachable on demand.
          * NB: the processor special-cases 0 as "no auto-release" (layer
-         * sticks), so 50 ms is used instead of a literal 0. 10 ms thrashed
-         * the layer (a deactivate/re-activate keymap change per event, which
-         * stalled the pointer); 50 ms sits just above the typical inter-event
-         * gap while moving, so motion stays smooth and the linger is
-         * imperceptible. */
-        input-processors = <&tp_temp_layer 5 50>;
+         * sticks), so a non-zero timeout is always used. */
+        input-processors = <&tp_temp_layer 5 150>;
 
         /* Exp73: hold J (layer 6) -> trackpoint tilt becomes scroll.
          * Y-invert matches the natural-up mapping; process-next keeps the
