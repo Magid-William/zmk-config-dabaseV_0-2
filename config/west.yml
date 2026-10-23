@@ -24,9 +24,11 @@ manifest:
     # (ZMK_INPUT_MOUSE_PS2_DELTA_MAX, on via dabase_v2_right.conf).
     # Exp80: + ordered byte/error callback queue + read-error notification and
     # pointer hold/resync after a lost byte (ZMK_INPUT_MOUSE_PS2_HOLD_ON_DROP).
+    # Exp81: + trackpoint rail power policy (idle cut, sleep pin isolation);
+    # enables ZMK_PS2_TP_POWER_POLICY in dabase_v2_right.conf.
     - name: zmk-ps2-trackpoint-driver
       remote: maged
-      revision: 3ac4d1d9176ad138fed54e71faf24ae1383b685c
+      revision: ddbe5bb01cb0972bd6b60cd4c6dced96d0e7ca2a
 
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff

@@ -33,10 +33,13 @@ include:
     cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=5400000
     # Exp78: no zmk-usb-logging snippet -> log/shell off on the battery half.
     artifact-name: dabase_v2_left
-  # Exp69 fresh: direct PS/2 right half as BLE peripheral (deep sleep @1.5h idle)
+  # Exp81: trackpoint rail power policy (idle cut + sleep pin isolation).
+  # CONFIG_ZMK_IDLE_TIMEOUT is the "no key and no pointer motion" window that
+  # cuts the TP rail; deep sleep is 1 h (was 1.5 h). The left half stays at
+  # 1.5 h on purpose - it is the unchanged control for this experiment.
   - board: nice_nano
     shield: dabase_v2_right
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SPLIT_BLE_PERIPHERAL_STACK_SIZE=2048 -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=5400000
+    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SPLIT_BLE_PERIPHERAL_STACK_SIZE=2048 -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=3600000
     # Exp80: USB logging/shell back on the right half to capture PS/2 drops.
     # (Left half stays logging-free per Exp79.)
     snippet: zmk-usb-logging
