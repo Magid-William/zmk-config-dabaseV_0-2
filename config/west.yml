@@ -28,7 +28,7 @@ manifest:
     # enables ZMK_PS2_TP_POWER_POLICY in dabase_v2_right.conf.
     - name: zmk-ps2-trackpoint-driver
       remote: maged
-      revision: 6eed397d9faf6964830646a02d21a94fb34de558
+      revision: 797205aadb1e3acb5382a636bb608a2d71e0891e
 
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
