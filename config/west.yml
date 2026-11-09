@@ -12,6 +12,9 @@ manifest:
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
       revision: main
+    - name: zmk-hid-io
+      remote: badjeff
+      revision: main
     - name: zmk-hid-joystick
       remote: badjeff
       revision: main
