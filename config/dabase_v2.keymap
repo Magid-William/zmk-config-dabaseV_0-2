@@ -6,6 +6,11 @@
 
 / {
     behaviors {
+        joystick_kp: joystick_kp {
+            compatible = "zmk,behavior-hid-joystick-key-press";
+            #binding-cells = <1>;
+        };
+
         scroll_behavior: scroll_behavior {
             compatible = "zmk,behavior-sensor-rotate";
             label = "SCROLL_BEHAVIOR";
@@ -158,10 +163,10 @@
 
         ps_gaming {
             bindings = <
-&trans  &kp P      &kp UP     &kp Z      &trans   &trans   &trans   &kp M     &kp UP    &kp R      &trans   &trans
-&trans  &kp A      &kp LEFT   &kp DOWN   &kp RIGHT&trans    &trans   &kp LEFT  &kp DOWN  &kp RIGHT  &kp SLASH&trans
-&trans  &trans     &trans     &trans     &trans   &trans   &trans   &trans    &trans    &trans     &trans   &trans
-&trans  &trans     &kp LEFT_BRACE &kp PERIOD &kp TAB &trans   &kp ENTER&kp UP    &kp RIGHT_BRACE&trans &trans &trans
+&trans  &joystick_kp 4 &joystick_kp 0 &trans   &trans   &trans   &trans   &trans   &trans   &joystick_kp 5 &trans   &trans
+&trans  &joystick_kp 6 &trans         &trans   &trans   &trans   &trans   &trans   &trans   &trans   &joystick_kp 7 &trans
+&trans  &trans         &trans         &trans   &trans   &trans   &trans   &trans   &trans   &trans     &trans   &trans
+&trans  &trans         &joystick_kp 3 &joystick_kp 2 &trans   &trans   &trans   &trans   &joystick_kp 1 &trans   &trans   &trans
             >;
         };
 
