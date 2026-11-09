@@ -48,6 +48,11 @@
             key-positions = <41 42>;
         };
 
+        PSgaming {
+            bindings = <&tog 5>;
+            key-positions = <40 43>;
+        };
+
         hamza {
             bindings = <&kp X>;
             key-positions = <13 22>;
@@ -148,6 +153,15 @@
 &trans  &kp CAPS       &kp A   &kp S        &kp D     &kp F           &mt H G  &kp LEFT      &kp DOWN  &kp RIGHT &mt J K  &trans
 &trans  &kp LEFT_SHIFT &kp Z   &kp X        &kp C     &mt B V         &mt B N  &kp N1        &kp N2    &kp N3    &kp N4   &trans
 &trans  &trans         &trans  &kp LEFT_ALT &kp LCTRL &kp SPACE       &kp DEL  &kp BACKSPACE &kp ENTER &trans    &trans   &trans
+            >;
+        };
+
+        ps_gaming {
+            bindings = <
+&trans  &kp P      &kp UP     &kp Z      &trans   &trans   &trans   &kp M     &kp UP    &kp R      &trans   &trans
+&trans  &kp A      &kp LEFT   &kp DOWN   &kp RIGHT&trans    &trans   &kp LEFT  &kp DOWN  &kp RIGHT  &kp SLASH&trans
+&trans  &trans     &trans     &trans     &trans   &trans   &trans   &trans    &trans    &trans     &trans   &trans
+&trans  &trans     &kp LEFT_BRACE &kp PERIOD &kp TAB &trans   &kp ENTER&kp UP    &kp RIGHT_BRACE&trans &trans &trans
             >;
         };
 
