@@ -52,6 +52,13 @@ include:
     artifact-name: dabase_v2_right-standalone-usb
 
   - board: nice_nano
+    shield: dabase_v2_left
+    cmake-args: -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=5400000
+    snippet: zmk-usb-logging
+    artifact-name: dabase_v2_left-standalone-usb
+
+
+  - board: nice_nano
     shield: settings_reset
   - board: xiao_ble
     shield: settings_reset
