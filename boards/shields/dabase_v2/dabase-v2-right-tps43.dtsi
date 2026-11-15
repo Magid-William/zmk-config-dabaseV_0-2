@@ -39,9 +39,11 @@
 };
 
 &i2c0 {
-    compatible = "nordic,nrf-twim";
+    /* Board default is nordic,nrf-twi (no EasyDMA). Kept on purpose: the
+     * pad clock-stretches while it opens a communication window, and the
+     * legacy TWI handles that without the DMA engine involved. */
     status = "okay";
-    clock-frequency = <I2C_BITRATE_FAST>; /* 400 kHz */
+    clock-frequency = <I2C_BITRATE_STANDARD>; /* 100 kHz */
     pinctrl-0 = <&dabase_i2c0_default>;
     pinctrl-1 = <&dabase_i2c0_sleep>;
     pinctrl-names = "default", "sleep";

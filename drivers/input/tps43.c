@@ -417,6 +417,16 @@ static void tps43_work_handler(struct k_work *work) {
     uint8_t touch_data[(TPS43_REG_REL_Y + 2) - TPS43_REG_GESTURE_EVENTS_0];
     ret = read_sequence_registers(dev, TPS43_REG_GESTURE_EVENTS_0, touch_data,
                                   sizeof(touch_data));
+    /* dabase_v2 patch: without RDY the pad has no open communication window.
+     * Datasheet 8.8.2 ("Force Communication"): while the IQS5xx is in a
+     * low-power state the first addressing is NACKed on purpose; the master
+     * must repeat it after at least 150 us and the pad then ACKs (clock
+     * stretching covers the rest). Retry a few times before giving up. */
+    for (int attempt = 0; ret < 0 && attempt < 3; attempt++) {
+        k_busy_wait(250);
+        ret = read_sequence_registers(dev, TPS43_REG_GESTURE_EVENTS_0, touch_data,
+                                      sizeof(touch_data));
+    }
     if (ret < 0) {
         /* dabase_v2 patch: with polling, a pad that stops answering would
          * otherwise log an error every few ms and swamp the console (and
