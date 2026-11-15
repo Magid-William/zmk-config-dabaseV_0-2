@@ -65,6 +65,11 @@
         x-resolution = <2048>;
         y-resolution = <1792>;
 
+        /* Sample the pad faster than the BLE connection interval (7.5 ms),
+         * so each HID notification carries a small, even delta instead of
+         * a late catch-up jump. */
+        report-rate-active = <8>;
+
         scroll;
         single-tap;
         two-finger-tap;
