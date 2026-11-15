@@ -418,8 +418,21 @@ static void tps43_work_handler(struct k_work *work) {
     ret = read_sequence_registers(dev, TPS43_REG_GESTURE_EVENTS_0, touch_data,
                                   sizeof(touch_data));
     if (ret < 0) {
-        LOG_ERR("Touch data read error: %d", ret);
+        /* dabase_v2 patch: with polling, a pad that stops answering would
+         * otherwise log an error every few ms and swamp the console (and
+         * the shell's RX buffer). Log the first failure, then occasionally. */
+        drv_data->read_failures++;
+        if (drv_data->read_failures == 1 || drv_data->read_failures == 60 ||
+            (drv_data->read_failures % 600) == 0) {
+            LOG_ERR("Touch data read error: %d (consecutive failures: %u)", ret,
+                    drv_data->read_failures);
+        }
         goto done;
+    }
+
+    if (drv_data->read_failures != 0) {
+        LOG_INF("Pad answering again after %u failed reads", drv_data->read_failures);
+        drv_data->read_failures = 0;
     }
 
     const uint8_t gestures_events[2] = {touch_data[0], touch_data[1]};
@@ -493,7 +506,7 @@ static void tps43_work_handler(struct k_work *work) {
                     rel_x = -rel_x;
                 }
                 int16_t wheel = (rel_x * config->scroll_sensitivity) / 100;
-                LOG_INF("Scrolling %d horizontally", wheel);
+                LOG_DBG("Scrolling %d horizontally", wheel);
                 input_report_rel(dev, INPUT_REL_HWHEEL, wheel, true, K_FOREVER);
             } else {
                 // Vertical scroll
@@ -501,7 +514,7 @@ static void tps43_work_handler(struct k_work *work) {
                     rel_y = -rel_y;
                 }
                 int16_t wheel = (rel_y * config->scroll_sensitivity) / 100;
-                LOG_INF("Scrolling %d vertically", wheel);
+                LOG_DBG("Scrolling %d vertically", wheel);
                 input_report_rel(dev, INPUT_REL_WHEEL, wheel, true, K_FOREVER);
             }
             is_scroll_active = false;
@@ -521,7 +534,7 @@ static void tps43_work_handler(struct k_work *work) {
                 int32_t scaled_y = ((int32_t)rel_y * config->sensitivity) / 100;
                 rel_y = (int16_t)CLAMP(scaled_y, INT16_MIN, INT16_MAX);
             }
-            LOG_INF("Sending movement: dx=%d, dy=%d", rel_x, rel_y);
+            LOG_DBG("Sending movement: dx=%d, dy=%d", rel_x, rel_y);
 
             input_report_rel(dev, INPUT_REL_X, rel_x, false, K_FOREVER);
             input_report_rel(dev, INPUT_REL_Y, rel_y, true, K_FOREVER);
@@ -537,11 +550,15 @@ done:
     k_sem_give(&drv_data->lock);
 
     /* dabase_v2 patch: poll again (fast while touched, slow while idle).
-     * Runs on the system workqueue, so this read has already finished. */
+     * Runs on the system workqueue, so this read has already finished.
+     * A pad that stopped answering is probed slowly until it recovers. */
     if (drv_data->polling && drv_data->device_ready && !drv_data->suspended) {
-        k_work_reschedule(&drv_data->poll_work,
-                          K_MSEC(drv_data->touching ? TPS43_POLL_ACTIVE_MS
-                                                    : TPS43_POLL_IDLE_MS));
+        uint32_t interval = drv_data->touching ? TPS43_POLL_ACTIVE_MS : TPS43_POLL_IDLE_MS;
+
+        if (drv_data->read_failures >= 3) {
+            interval = 1000;
+        }
+        k_work_reschedule(&drv_data->poll_work, K_MSEC(interval));
     }
 }
 

@@ -265,6 +265,7 @@ struct tps43_drv_data {
     struct k_work work;
     /* dabase_v2 patch: timer-driven reads when rdy-gpios is not wired. */
     struct k_work_delayable poll_work;
+    uint32_t read_failures;
     bool polling;
 
     bool device_ready;
