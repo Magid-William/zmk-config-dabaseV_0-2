@@ -94,8 +94,11 @@
     scroll_override {
         layers = <6>;
         /* swap FIRST: overrides run before the base list, and the dongle used
-         * to receive already-swapped events from the right half. */
-        input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP)>, <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>, <&zip_scroll_scaler 1 2>;
+         * to receive already-swapped events from the right half.
+         * Exp83: scroll felt slow at 1:2 (values halved) - run the mapper at
+         * 1:1 (2x the old speed). Tune the scaler: 3:2 = 1.5x, 1:1 = 2x,
+         * 2:1 = 4x, 1:2 = old half speed. */
+        input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP)>, <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>, <&zip_scroll_scaler 1 1>;
         process-next;
     };
 
