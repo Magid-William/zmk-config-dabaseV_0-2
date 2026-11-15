@@ -498,41 +498,51 @@ static void tps43_work_handler(struct k_work *work) {
     }
 
     if (gestures_events[0] != 0 || gestures_events[1] != 0) {
+        LOG_DBG("Gestures: Single=0x%02X, Multi=0x%02X", gestures_events[0], gestures_events[1]);
 
-        LOG_INF("Gestures: Single=0x%02X, Multi=0x%02X", gestures_events[0], gestures_events[1]);
-
-        if (gestures_events[0] & TPS43_SINGLE_TAP) {
-            LOG_INF("Single tap → LEFT BUTTON");
+        /* dabase_v2 patch: the pad keeps setting gesture flags in the report
+         * window even when GESTURE_EVENT is cleared in SYSTEM_CONFIG_1, so act
+         * only on the gestures the devicetree actually enables. With every
+         * flag off this pad is a pure pointer (buttons come from the temp
+         * layer on the keymap, scrolling from the scroll layer). */
+        if (config->single_tap && (gestures_events[0] & TPS43_SINGLE_TAP)) {
+            LOG_INF("Single tap -> LEFT BUTTON");
             input_report_key(dev, INPUT_BTN_0, 1, true, K_FOREVER);
-            input_report_key(dev, INPUT_BTN_0, 0, true, K_FOREVER);  
+            input_report_key(dev, INPUT_BTN_0, 0, true, K_FOREVER);
         }
-        if (gestures_events[0] & (TPS43_SWIPE_UP | TPS43_SWIPE_DOWN | TPS43_SWIPE_LEFT | TPS43_SWIPE_RIGHT)) {
+        if (config->swipes &&
+            (gestures_events[0] & (TPS43_SWIPE_UP | TPS43_SWIPE_DOWN | TPS43_SWIPE_LEFT |
+                                   TPS43_SWIPE_RIGHT))) {
             LOG_INF("Single finger swipe");
             tps43_handle_swipe(dev, rel_x, rel_y);
         }
-        if (gestures_events[1] & TPS43_TWO_FINGER_TAP) {
-            LOG_INF("Two finger tap → RIGHT BUTTON");
-            input_report_key(dev, INPUT_BTN_1, 1, true, K_FOREVER);  
-            input_report_key(dev, INPUT_BTN_1, 0, true, K_FOREVER); 
+        if (config->two_finger_tap && (gestures_events[1] & TPS43_TWO_FINGER_TAP)) {
+            LOG_INF("Two finger tap -> RIGHT BUTTON");
+            input_report_key(dev, INPUT_BTN_1, 1, true, K_FOREVER);
+            input_report_key(dev, INPUT_BTN_1, 0, true, K_FOREVER);
         }
-        if ((gestures_events[0] & TPS43_PRESS_AND_HOLD) && (!(is_drag_active))) {
+        if (config->press_and_hold && (gestures_events[0] & TPS43_PRESS_AND_HOLD) &&
+            (!(is_drag_active))) {
             LOG_INF("Press and hold detected - DRAG (HOLD LEFT BUTTON)");
             // set internal drag flag and press left mouse button
             is_drag_active = true;
-            input_report_key(dev, INPUT_BTN_0, 1, true, K_FOREVER); 
+            input_report_key(dev, INPUT_BTN_0, 1, true, K_FOREVER);
         }
-        if (gestures_events[1] & TPS43_SCROLL) {
+        if (config->scroll && (gestures_events[1] & TPS43_SCROLL)) {
             // set scroll flag for processing in tp_movement block
             is_scroll_active = true;
         }
-        if (gestures_events[1] & TPS43_ZOOM) {
+        if (config->zoom && (gestures_events[1] & TPS43_ZOOM)) {
             // set zoom flag for processing in tp_movement block
             is_zoom_active = true;
         }
     }
 
     // Detect release of a 'press and hold' left press
-    if ((!(gestures_events[0] & TPS43_PRESS_AND_HOLD)) && is_drag_active) {
+    if (!config->press_and_hold && is_drag_active) {
+        is_drag_active = false;
+        input_report_key(dev, INPUT_BTN_0, 0, true, K_FOREVER);
+    } else if ((!(gestures_events[0] & TPS43_PRESS_AND_HOLD)) && is_drag_active) {
         LOG_INF("Press and hold end detected - RELEASE (RELEASE LEFT BUTTON)");
         // release drag flag and release left mouse button
         is_drag_active = false;
