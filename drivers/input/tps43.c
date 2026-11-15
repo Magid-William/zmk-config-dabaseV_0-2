@@ -219,7 +219,8 @@ static void tps43_poll_work_handler(struct k_work *work) {
 
     /* Suspend/resume cancels and restarts the poll, and an unconfigured
      * device would only produce I2C errors. */
-    if (!drv_data->initialized || !drv_data->device_ready || drv_data->suspended) {
+    if (!drv_data->initialized || !drv_data->device_ready || drv_data->suspended ||
+        drv_data->rail_off) {
         return;
     }
 
@@ -258,6 +259,11 @@ static int tps43_set_suspend_internal(const struct device *dev, bool suspend, bo
     struct tps43_drv_data *drv_data = dev->data;
     const struct tps43_config *config = dev->config;
     int ret = 0;
+
+    // dabase_v2: never touch the bus while the rail is cut
+    if (drv_data->rail_off) {
+        return 0;
+    }
 
     // If power management is disabled, or device is already in the desired state, do nothing
     if (drv_data->suspended == suspend || !config->enable_power_management) {
@@ -392,6 +398,11 @@ static void tps43_work_handler(struct k_work *work) {
     bool is_drag_active = drv_data->drag_active;
     int ret;
     
+    // dabase_v2: no I2C traffic while the pad's rail is cut
+    if (drv_data->rail_off) {
+        return;
+    }
+
     // If device is in suspend, ignore interrupt (RDY should be disabled)
     if (drv_data->suspended) {
         LOG_WRN("RDY interrupt in suspend mode - ignoring");
@@ -1670,6 +1681,49 @@ DT_INST_FOREACH_STATUS_OKAY(TPS43_INIT)
  * @param sleep true - enter sleep mode, false - wake up
  * @return 0 on success, negative error code on failure
  */
+int tps43_rail_power(const struct device *dev, bool on) {
+    struct tps43_drv_data *drv_data = dev->data;
+
+    if (!on) {
+        if (drv_data->rail_off) {
+            return 0;
+        }
+        /* Stop all traffic before the caller drops the rail. */
+        drv_data->rail_off = true;
+        drv_data->device_ready = false;
+        drv_data->touching = false;
+        drv_data->touch_release_count = 0;
+        drv_data->drag_active = false;
+        k_work_cancel_delayable(&drv_data->poll_work);
+        LOG_INF("rail off: polling stopped");
+        return 0;
+    }
+
+    if (!drv_data->rail_off) {
+        return 0;
+    }
+    drv_data->rail_off = false;
+
+    /* The pad rebooted: registers are back to defaults (EVENT_MODE on,
+     * gestures on, no report rate), so run the full init sequence again. */
+    int ret = check_reset_and_reconfigure(dev);
+    if (ret != 0) {
+        LOG_ERR("rail on: reconfigure failed (%d)", ret);
+        return ret;
+    }
+
+    drv_data->read_failures = 0;
+    drv_data->last_ok_ms = k_uptime_get();
+    drv_data->suspended = false;
+
+    if (drv_data->polling) {
+        k_work_reschedule(&drv_data->poll_work, K_MSEC(TPS43_POLL_IDLE_MS));
+    }
+
+    LOG_INF("rail on: pad reconfigured");
+    return 0;
+}
+
 int tps43_set_sleep(const struct device *dev, bool sleep) {
     if (dev == NULL) {
         return -EINVAL;

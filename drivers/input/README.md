@@ -33,6 +33,11 @@ When the devicetree node has no `rdy-gpios`, the driver now reads on a
   resolves each scroll window to a single axis before reporting (measured:
   dx=0/dy=N or dx=N/dy=0), so diagonal scrolling cannot be produced from
   the scroll gesture on this pad.
+- `CONFIG_INPUT_TPS43_POWER_POLICY` (dabase_v2) gates the pad's VCC rail on
+  ZMK's activity state, ported from the TrackPoint field fix: cut on idle,
+  restore on activity or USB, then re-run the whole init because the IQS5xx
+  loses its registers on power loss; the I2C pins go to their sleep state
+  (bias disabled) while the rail is down
 - `CONFIG_INPUT_TPS43_RAW_DIAG` prints the raw report window for bring-up
 
 Everything else (init sequence, ACK_RESET, ATI, configuration writes,

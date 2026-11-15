@@ -280,9 +280,15 @@ struct tps43_drv_data {
     int16_t xy_x_remainder;
     int16_t xy_y_remainder;
     int64_t last_keepalive_ms;
+    bool rail_off;
 };
 
 int tps43_set_sleep(const struct device *dev, bool sleep);
+
+/* dabase_v2: cut/restore the pad's power rail. Off stops all I2C traffic;
+ * on waits for the pad to boot and re-writes its whole configuration
+ * (IQS5xx registers are volatile and reset on power loss). */
+int tps43_rail_power(const struct device *dev, bool on);
 
 #ifdef __cplusplus
 }

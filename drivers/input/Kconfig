@@ -62,6 +62,18 @@ config INPUT_TPS43_LAYER_KEEPALIVE_MS
       layer active during a still touch (and for the temp layer's own
       timeout after the finger lifts). 0 disables the keep-alive.
 
+config INPUT_TPS43_POWER_POLICY
+    bool "Cut the pad's power rail while the keyboard is idle"
+    default n
+    depends on INPUT_TPS43
+    help
+      dabase_v2: drive the pad's VCC rail (nice_nano EXT_VCC, P0.13) from
+      ZMK's activity state. The rail is cut when the keyboard goes idle and
+      restored on the next activity or when USB appears; the pad is
+      reconfigured over I2C after every restore because the IQS5xx loses its
+      registers on power loss. Nothing wakes the pad itself: the next key
+      press does.
+
 config INPUT_TPS43_RAW_DIAG
     bool "Log the raw report window (bring-up)"
     default n

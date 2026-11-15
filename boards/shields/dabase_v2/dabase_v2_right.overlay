@@ -109,18 +109,15 @@
 };
 
 / {
-    /* The pad is powered from the nice_nano EXT_VCC rail (P0.13). Drive it
-     * unconditionally instead of going through ZMK's ext_power driver: a
-     * persisted "off" state (left behind by the PS/2 build's idle power
-     * policy) would otherwise leave the pad unpowered on every boot. */
+    /* The pad is powered from the nice_nano EXT_VCC rail (P0.13), gated by
+     * drivers/input/tps43_power_policy.c on ZMK's activity state. ZMK's own
+     * ext_power driver is not used: it saves its state to settings on every
+     * change, which left the rail persisted "off" in the PS/2 era. */
     /delete-node/ EXT_POWER;
-};
 
-&gpio0 {
-    ext_vcc_hog {
-        gpio-hog;
-        gpios = <13 GPIO_ACTIVE_HIGH>;
-        output-high;
-        line-name = "ext-vcc";
+    tps43_power_rail: tps43_power_rail {
+        compatible = "dabase,tps43-rail";
+        gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+        boot-mute-ms = <800>;
     };
 };

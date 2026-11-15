@@ -34,6 +34,10 @@
             psels = <NRF_PSEL(TWIM_SDA, 0, 17)>,
                     <NRF_PSEL(TWIM_SCL, 0, 20)>;
             low-power-enable;
+            /* The power policy applies this state while the pad's rail is
+             * off: without it the internal pull-ups push current through the
+             * unpowered pad's ESD diodes (~4%/night in the TrackPoint era). */
+            bias-disable;
         };
     };
 };

@@ -1,0 +1,20 @@
+description: |
+  Power rail control for the Azoteq TPS43 touchpad (dabase_v2).
+
+  The pad is powered from the nice!nano EXT_VCC rail, which the firmware
+  gates on ZMK's activity state. On restore the pad reboots and must be
+  reconfigured over I2C, so boot-mute-ms is the delay between switching the
+  rail on and re-running the driver's init sequence.
+
+compatible: "dabase,tps43-rail"
+
+properties:
+  gpios:
+    type: phandle-array
+    required: true
+    description: Rail enable pin (active high drives the pad's VCC).
+
+  boot-mute-ms:
+    type: int
+    default: 800
+    description: Delay after switching the rail on before reconfiguring the pad.
