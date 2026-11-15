@@ -18,7 +18,7 @@ config INPUT_TPS43_INIT_PRIORITY
 config INPUT_TPS43_POLL_INTERVAL_MS
     int "Polling interval while touched, when no rdy-gpios is wired (ms)"
     range 1 1000
-    default 5
+    default 10
     help
       dabase_v2 patch: the PCB does not route the trackpad RDY line, so the
       driver cannot be interrupt driven. When the devicetree node has no

@@ -428,22 +428,25 @@ static void tps43_work_handler(struct k_work *work) {
                                       sizeof(touch_data));
     }
     if (ret < 0) {
-        /* dabase_v2 patch: with polling, a pad that stops answering would
-         * otherwise log an error every few ms and swamp the console (and
-         * the shell's RX buffer). Log the first failure, then occasionally. */
+        /* dabase_v2 patch: polling means most attempts land between two
+         * communication windows and are NACKed by design, so only complain
+         * when the pad has been silent for a while. */
         drv_data->read_failures++;
-        if (drv_data->read_failures == 1 || drv_data->read_failures == 60 ||
-            (drv_data->read_failures % 3000) == 0) {
-            LOG_ERR("Touch data read error: %d (consecutive failures: %u)", ret,
+        if (k_uptime_get() - drv_data->last_ok_ms > 2000 &&
+            (drv_data->read_failures % 200) == 1) {
+            LOG_ERR("Pad silent for %lld ms (%u consecutive failed reads)",
+                    (long long)(k_uptime_get() - drv_data->last_ok_ms),
                     drv_data->read_failures);
         }
         goto done;
     }
 
-    if (drv_data->read_failures != 0) {
-        LOG_INF("Pad answering again after %u failed reads", drv_data->read_failures);
-        drv_data->read_failures = 0;
+    if (k_uptime_get() - drv_data->last_ok_ms > 2000) {
+        LOG_INF("Pad answering again after %u failed reads (silent %lld ms)",
+                drv_data->read_failures, (long long)(k_uptime_get() - drv_data->last_ok_ms));
     }
+    drv_data->last_ok_ms = k_uptime_get();
+    drv_data->read_failures = 0;
 
     const uint8_t gestures_events[2] = {touch_data[0], touch_data[1]};
     uint8_t num_fingers = touch_data[4];
