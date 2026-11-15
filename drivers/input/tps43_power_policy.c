@@ -27,6 +27,8 @@
  * "ext_power = off" across a reboot (it did, in the PS/2 era).
  */
 
+#define DT_DRV_COMPAT dabase_tps43_rail
+
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
