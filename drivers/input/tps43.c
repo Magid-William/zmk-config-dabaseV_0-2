@@ -433,7 +433,7 @@ static void tps43_work_handler(struct k_work *work) {
          * the shell's RX buffer). Log the first failure, then occasionally. */
         drv_data->read_failures++;
         if (drv_data->read_failures == 1 || drv_data->read_failures == 60 ||
-            (drv_data->read_failures % 600) == 0) {
+            (drv_data->read_failures % 3000) == 0) {
             LOG_ERR("Touch data read error: %d (consecutive failures: %u)", ret,
                     drv_data->read_failures);
         }
@@ -560,15 +560,11 @@ done:
     k_sem_give(&drv_data->lock);
 
     /* dabase_v2 patch: poll again (fast while touched, slow while idle).
-     * Runs on the system workqueue, so this read has already finished.
-     * A pad that stopped answering is probed slowly until it recovers. */
+     * Runs on the system workqueue, so this read has already finished. */
     if (drv_data->polling && drv_data->device_ready && !drv_data->suspended) {
-        uint32_t interval = drv_data->touching ? TPS43_POLL_ACTIVE_MS : TPS43_POLL_IDLE_MS;
-
-        if (drv_data->read_failures >= 3) {
-            interval = 1000;
-        }
-        k_work_reschedule(&drv_data->poll_work, K_MSEC(interval));
+        k_work_reschedule(&drv_data->poll_work,
+                          K_MSEC(drv_data->touching ? TPS43_POLL_ACTIVE_MS
+                                                    : TPS43_POLL_IDLE_MS));
     }
 }
 
@@ -608,7 +604,15 @@ static int tps43_configure_device(const struct device *dev) {
     int ret;
 
     // write to TPS43_REG_SYSTEM_CONFIG_1 events to track  
-    uint8_t events_to_track = TPS43_TP_EVENT | TPS43_EVENT_MODE;
+    uint8_t events_to_track = TPS43_TP_EVENT;
+
+    /* dabase_v2 patch: EVENT_MODE suppresses the communication window while
+     * nothing happens on the pad, which is only workable when RDY is wired
+     * (the pad raises RDY to announce a window). Without RDY, keep the
+     * window available every conversion cycle so polling can read it. */
+    if (config->rdy_gpio.port != NULL) {
+        events_to_track |= TPS43_EVENT_MODE;
+    }
     
     // Gestures (single_tap, press_and_hold, scroll, two_finger_tap)
     if (config->single_tap || config->press_and_hold || 

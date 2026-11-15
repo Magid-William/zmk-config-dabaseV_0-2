@@ -129,10 +129,18 @@
 #endif
 
 / {
-    EXT_POWER {
-        /* nice_nano EXT_VCC rail: the pad is powered from it. Keep the
-         * longer settle delay so the pad is up before the driver probes. */
-        control-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
-        init-delay-ms = <500>;
+    /* The pad is powered from the nice_nano EXT_VCC rail (P0.13). Drive it
+     * unconditionally instead of going through ZMK's ext_power driver: a
+     * persisted "off" state (left behind by the PS/2 build's idle power
+     * policy) would otherwise leave the pad unpowered on every boot. */
+    /delete-node/ EXT_POWER;
+};
+
+&gpio0 {
+    ext_vcc_hog {
+        gpio-hog;
+        gpios = <13 GPIO_ACTIVE_HIGH>;
+        output-high;
+        line-name = "ext-vcc";
     };
 };

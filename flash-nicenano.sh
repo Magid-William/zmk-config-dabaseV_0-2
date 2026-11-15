@@ -14,7 +14,6 @@
 # Env:
 #   DRIVE_LABEL   mass-storage label (default NICENANO)
 #   BOOT_WAIT     seconds to wait for the bootloader drive (default 40)
-#   SHELL_CMD_WAIT  seconds to wait for the shell to answer (default 10)
 
 set -euo pipefail
 
@@ -22,7 +21,6 @@ UF2="${1:-}"
 HINT="${2-dabase--v2}"
 DRIVE_LABEL="${DRIVE_LABEL:-NICENANO}"
 BOOT_WAIT="${BOOT_WAIT:-40}"
-SHELL_CMD_WAIT="${SHELL_CMD_WAIT:-10}"
 
 if [[ -z "$UF2" || ! -f "$UF2" ]]; then
     echo "ERROR: UF2 not found: ${UF2:-<none>}" >&2
@@ -55,21 +53,31 @@ configure_port() {
     stty -F "$1" 115200 raw -echo -echoe -echok 2>/dev/null || true
 }
 
-drain() {
-    # Read whatever the console has buffered, for a short while.
-    timeout 1 cat "$1" >/dev/null 2>&1 || true
+shell_cmd() {
+    # Send one command to the ZMK shell.
+    #
+    # Opening the tty drops the first character, and the shell's RX ring
+    # overflows on bursty writes (it is shared with the log console), so the
+    # command goes out byte by byte on a single open handle.
+    local port="$1" cmd="$2" i
+    configure_port "$port"
+    exec 9<>"$port" || return 1
+    printf '\r' >&9
+    sleep 0.6
+    for ((i = 0; i < ${#cmd}; i++)); do
+        printf '%s' "${cmd:i:1}" >&9
+        sleep 0.03
+    done
+    printf '\r' >&9
+    sleep 0.3
+    exec 9>&-
+    return 0
 }
 
-shell_cmd() {
-    # Wait until the shell answers, then run one command.
-    local port="$1" cmd="$2" i
-    for ((i = 0; i < SHELL_CMD_WAIT; i++)); do
-        configure_port "$port"
-        printf '\r\n' > "$port" 2>/dev/null || { sleep 1; continue; }
-        sleep 0.4
-        drain "$port"
-        if printf '%s\r\n' "$cmd" > "$port"; then
-            sleep 0.2
+wait_for_drive() {
+    local deadline=$((SECONDS + $1))
+    while ((SECONDS < deadline)); do
+        if [[ -e "/dev/disk/by-label/$DRIVE_LABEL" ]]; then
             return 0
         fi
         sleep 1
@@ -81,28 +89,30 @@ shell_cmd() {
 say "=== nice_nano headless flasher ==="
 say "[1/4] Entering bootloader (GPREGRET 0x57 + cold reboot)"
 
-PORT=""
-if PORT=$(find_port); then
-    say "      serial console: $PORT"
-    if shell_cmd "$PORT" "devmem 0x4000051C 32 0x00000057"; then
-        shell_cmd "$PORT" "kernel reboot cold" || true
-        say "      bootloader request sent"
-    else
-        say "      WARN: serial console did not answer - continuing anyway"
-    fi
-else
-    say "      WARN: no ZMK serial console found (hint '$HINT') - continuing anyway"
-fi
-
-say "[2/4] Waiting for $DRIVE_LABEL volume"
 DRIVE=""
-DEADLINE=$((SECONDS + BOOT_WAIT))
-while ((SECONDS < DEADLINE)); do
-    if [[ -e "/dev/disk/by-label/$DRIVE_LABEL" ]]; then
+for attempt in 1 2; do
+    if wait_for_drive 2; then
+        say "      already in the bootloader"
         DRIVE="/dev/disk/by-label/$DRIVE_LABEL"
         break
     fi
-    sleep 1
+
+    PORT=""
+    if PORT=$(find_port); then
+        say "      serial console: $PORT"
+        shell_cmd "$PORT" "devmem 0x4000051C 32 0x00000057"
+        shell_cmd "$PORT" "kernel reboot cold"
+        say "      bootloader request sent (attempt $attempt)"
+    else
+        say "      WARN: no ZMK serial console found (hint '$HINT')"
+    fi
+
+    say "[2/4] Waiting for $DRIVE_LABEL volume"
+    if wait_for_drive "$BOOT_WAIT"; then
+        DRIVE="/dev/disk/by-label/$DRIVE_LABEL"
+        break
+    fi
+    say "      not found yet, retrying the bootloader request"
 done
 
 if [[ -z "$DRIVE" ]]; then
