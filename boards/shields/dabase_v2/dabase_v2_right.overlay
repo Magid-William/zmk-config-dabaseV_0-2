@@ -6,6 +6,12 @@
  * ble-azoteq-tps43: Azoteq TPS43 touchpad on the right half.
  * Replaces the direct PS/2 TrackPoint (Exp69..Exp82). See
  * dabase-v2-right-tps43.dtsi for wiring and driver notes.
+ *
+ * NOTE: shield .overlay files are NOT preprocessed with the Kconfig
+ * symbols (an #ifdef CONFIG_ZMK_SPLIT_ROLE_CENTRAL here silently compiled
+ * to the wrong branch and left the input listener disabled). The right
+ * half is always the split central since Exp82, so this file configures
+ * the pointer pipeline unconditionally.
  */
 
 #include "dabase_v2.dtsi"
@@ -40,63 +46,43 @@
 };
 
 / {
-    split_inputs {
-        #address-cells = <1>;
-        #size-cells = <0>;
+    /* The right half is the split central, so the pad's own input device
+     * feeds the HID pointer pipeline directly. */
+    pad_listener: pad_listener {
+        compatible = "zmk,input-listener";
+        status = "okay";
+        device = <&tps43_trackpad>;
 
-        pad_split: pad_split@0 {
-            compatible = "zmk,input-split";
-            reg = <0>;
+        /* Touch the pad -> layer 5 (tp_layer) for MB1/MB2/MB3 on the right
+         * thumb cluster. 150 ms idle timeout holds the layer through a
+         * normal pause between touches. NB: the processor treats 0 as
+         * "no auto-release" (layer sticks), so a non-zero timeout is used. */
+        input-processors = <&tp_temp_layer 5 150>;
+
+        scroll_override {
+            layers = <6>;
+            /* Hold J -> finger movement becomes scroll. 1:1: a trackpad
+             * emits pixel-sized deltas, unlike the PS/2 TrackPoint's tiny
+             * counts. */
+            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>;
+            process-next;
+        };
+
+        /* Hold K (layer 7) -> finger movement becomes volume: Y-invert so
+         * up = louder. The keybind override runs first (process-next), then
+         * volume_move_zero scales X/Y to 0 so the cursor stays put. */
+        volume_override {
+            layers = <7>;
+            input-processors = <&zip_xy_transform INPUT_TRANSFORM_Y_INVERT>, <&keybind_volume>;
+            process-next;
+        };
+
+        volume_move_zero {
+            layers = <7>;
+            input-processors = <&zip_xy_scaler 0 1>;
         };
     };
 
-    pad_listener: pad_listener {
-        compatible = "zmk,input-listener";
-        status = "disabled";
-        device = <&tps43_trackpad>;
-    };
-};
-
-#ifdef CONFIG_ZMK_SPLIT_ROLE_CENTRAL
-/* Exp82: no dongle - the right half IS the split central, so the pointer
- * pipeline runs here: touch the pad -> tp_layer (5) for MB1/MB2/MB3,
- * hold J (6) -> scroll, hold K (7) -> volume.
- * Axis transform: none for now. The pad's switch-xy/invert-* devicetree
- * properties are applied inside the driver, so orientation is corrected
- * there (see dabase-v2-right-tps43.dtsi) and the processors stay simple. */
-&pad_listener {
-    status = "okay";
-    /* Touch the pad -> layer 5 (tp_layer), giving MB1/MB2/MB3 on the right
-     * thumb cluster. 150 ms idle timeout holds the layer through a normal
-     * pause between touches yet drops it before a thumb keypress. NB: the
-     * processor special-cases 0 as "no auto-release" (layer sticks). */
-    input-processors = <&tp_temp_layer 5 150>;
-
-    scroll_override {
-        layers = <6>;
-        /* Hold J -> finger movement becomes scroll (1:1: a trackpad emits
-         * pixel-sized deltas, unlike the PS/2 TrackPoint's tiny counts). */
-        input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>;
-        process-next;
-    };
-
-    /* Hold K (layer 7) -> finger movement becomes volume.
-     * Y-invert so up = louder. Keybind override first (process-next), then
-     * scale X/Y to 0 so the cursor stays put on layer 7 (the keybind's STOP
-     * is honored because volume_move_zero has no process-next). */
-    volume_override {
-        layers = <7>;
-        input-processors = <&zip_xy_transform INPUT_TRANSFORM_Y_INVERT>, <&keybind_volume>;
-        process-next;
-    };
-
-    volume_move_zero {
-        layers = <7>;
-        input-processors = <&zip_xy_scaler 0 1>;
-    };
-};
-
-/ {
     tp_temp_layer: tp_temp_layer {
         compatible = "zmk,input-processor-temp-layer";
         #input-processor-cells = <2>;
@@ -105,8 +91,8 @@
 
     /* Exp73: volume keybind - defined inline (the module's own dtsi pulls
      * <dt-bindings/zmk/input-processor-keybind.h>, missing from ZMK + the
-     * module). Bindings order is [RIGHT, LEFT, DOWN, UP] per press_work_cb:
-     * X mapped to &none so only Y produces volume. tick 32 = very slow. */
+     * module). Bindings order is [RIGHT, LEFT, DOWN, UP]: X mapped to
+     * &none so only Y produces volume. tick 32 = very slow. */
     keybind_volume: keybind_volume {
         compatible = "zmk,input-processor-keybind";
         #input-processor-cells = <0>;
@@ -121,12 +107,6 @@
         max_pending_activations = <2>;
     };
 };
-#else
-/* BLE peripheral: forward the pad's input to the central. */
-&pad_split {
-    device = <&tps43_trackpad>;
-};
-#endif
 
 / {
     /* The pad is powered from the nice_nano EXT_VCC rail (P0.13). Drive it

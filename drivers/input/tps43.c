@@ -471,6 +471,19 @@ static void tps43_work_handler(struct k_work *work) {
 #endif
 
     bool is_touching = (num_fingers > 0);
+
+    /* dabase_v2 patch: polling reads some windows before the pad has
+     * refreshed its touch count, so a single empty window must not end a
+     * touch (that would send a click release on every other poll). Require
+     * a few consecutive empty windows before reporting the finger lift. */
+    if (!is_touching && drv_data->touching) {
+        if (++drv_data->touch_release_count < 3) {
+            is_touching = true;
+        }
+    } else if (is_touching) {
+        drv_data->touch_release_count = 0;
+    }
+
     if (is_touching != drv_data->touching) {
         drv_data->touching = is_touching;
         LOG_INF("Touch state changed: %s", is_touching ? "down" : "up");

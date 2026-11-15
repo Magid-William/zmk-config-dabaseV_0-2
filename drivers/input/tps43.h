@@ -274,6 +274,7 @@ struct tps43_drv_data {
     bool drag_active;
     bool suspended;         
     bool touching;          
+    uint8_t touch_release_count;
 };
 
 int tps43_set_sleep(const struct device *dev, bool sleep);

@@ -102,8 +102,8 @@ for attempt in 1 2; do
     PORT=""
     if PORT=$(find_port); then
         say "      serial console: $PORT"
-        shell_cmd "$PORT" "devmem 0x4000051C 32 0x00000057"
-        shell_cmd "$PORT" "kernel reboot cold"
+        shell_cmd "$PORT" "devmem 0x4000051C 32 0x00000057" || true
+        shell_cmd "$PORT" "kernel reboot cold" || true
         say "      bootloader request sent (attempt $attempt)"
     else
         say "      WARN: no ZMK serial console found (hint '$HINT')"
