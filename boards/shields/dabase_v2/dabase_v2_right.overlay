@@ -78,15 +78,75 @@
 };
 
 #ifdef CONFIG_ZMK_SPLIT_ROLE_CENTRAL
-/* standalone USB right half (or local central): listen to the direct-PS2 TP */
+/* Exp82: no dongle - the right half IS the split central, so the pointer
+ * pipeline that used to live on the dongle listener runs here: touch the TP
+ * -> tp_layer (5) for MB1/MB2/MB3, hold J (6) -> scroll, hold K (7) -> volume.
+ * The swap transform stays FIRST so the corrected axes feed the processors. */
 &trackball_listener {
     status = "okay";
-    input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP)>;
+    /* Exp72/Exp78: touch the TP -> layer 5 (tp_layer), giving MB1/MB2/MB3
+     * on the right thumb cluster. Exp80 tuning: 150 ms idle timeout holds
+     * the layer through a normal pause between nudges yet drops it well
+     * before a thumb keypress. NB: the processor special-cases 0 as
+     * "no auto-release" (layer sticks), so a non-zero timeout is used. */
+    input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP)>, <&tp_temp_layer 5 150>;
+
+    scroll_override {
+        layers = <6>;
+        /* swap FIRST: overrides run before the base list, and the dongle used
+         * to receive already-swapped events from the right half. */
+        input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP)>, <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>, <&zip_scroll_scaler 1 2>;
+        process-next;
+    };
+
+    /* Exp73: hold K (layer 7) -> trackpoint tilt becomes volume.
+     * Y-invert so up = louder. Keybind override first (process-next), then
+     * scale X/Y to 0 so the cursor stays put on layer 7 (the keybind's STOP
+     * is honored because volume_move_zero has no process-next). */
+    volume_override {
+        layers = <7>;
+        /* same swap-first rule as scroll_override (old dongle input was
+         * pre-swapped), then the original Y-invert so up = louder;
+         * volume_move_zero eats the leftover movement. */
+        input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP)>, <&zip_xy_transform INPUT_TRANSFORM_Y_INVERT>, <&keybind_volume>;
+        process-next;
+    };
+
+    volume_move_zero {
+        layers = <7>;
+        input-processors = <&zip_xy_scaler 0 1>;
+    };
+};
+
+/ {
+    tp_temp_layer: tp_temp_layer {
+        compatible = "zmk,input-processor-temp-layer";
+        #input-processor-cells = <2>;
+        status = "okay";
+    };
+
+    /* Exp73: volume keybind - defined inline (the module's own dtsi pulls
+     * <dt-bindings/zmk/input-processor-keybind.h>, missing from ZMK + the
+     * module). Bindings order is [RIGHT, LEFT, DOWN, UP] per press_work_cb:
+     * X mapped to &none so only Y produces volume. tick 32 = very slow. */
+    keybind_volume: keybind_volume {
+        compatible = "zmk,input-processor-keybind";
+        #input-processor-cells = <0>;
+        mode = <0>;
+        track_remainders;
+        bindings = <&none>, <&none>, <&kp C_VOLUME_DOWN>, <&kp C_VOLUME_UP>;
+        tick = <32>;
+        wait-ms = <10>;
+        tap-ms = <12>;
+        threshold = <1>;
+        max_threshold = <512>;
+        max_pending_activations = <2>;
+    };
 };
 #else
-/* BLE peripheral: forward direct-PS2 input to the central (dongle).
+/* BLE peripheral: forward direct-PS2 input to the central (right half).
  * The split node runs its input-processors BEFORE forwarding, so the
- * corrected events land on the dongle (no dongle-side change needed). */
+ * corrected events land on the central (no central-side change needed). */
 &trackball_split {
     device = <&tpoint0>;
     input-processors = <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP)>;

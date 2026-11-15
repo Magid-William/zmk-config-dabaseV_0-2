@@ -36,8 +36,9 @@ manifest:
 
     # Exp73: hold K -> trackpoint tilt becomes volume via te9no's
     # keybind input-processor (Exp51 pattern). The keybind_volume node is
-    # defined inline in the dongle overlay (NOT via the module's dtsi,
-    # which pulls a missing dt-bindings header).
+    # defined inline in the right overlay (NOT via the module's dtsi,
+    # which pulls a missing dt-bindings header). Only built for the
+    # right-half central (no dongle since Exp82).
     - name: zmk-input-processor-keybind
       remote: te9no
       revision: main

@@ -6,59 +6,32 @@
 # `artifact-name` to assign a name to distinguish build outputs from each other:
 #
 # board: [ "nice_nano" ]
-# shield: [ "dabase_v2_left", "dabase_v2_right" ]
+# shield: [ "dabase_v2_right", "dabase_v2_left" ]
 # include:
-#   - board: bdn9_rev2
 #   - board: nice_nano
-#     shield: reviung41
-#   - board: nice_nano
-#     shield: dabase_v2_left
+#     shield: dabase_v2_right
 #     snippet: studio-rpc-usb-uart
 #     cmake-args: -DCONFIG_ZMK_STUDIO=y
-#     artifact-name: dabase_v2_left_with_studio
+#     artifact-name: dabase--v2_right_with_studio
 #
 ---
 include:
-  - board: xiao_ble
-    shield: dabase_v2_dongle
+  # Right half: split central (no dongle). Talks to the host over BLE or USB,
+  # owns the direct-PS/2 trackpoint and forwards to the left half.
+  # Exp81 trackpoint rail power policy: idle cut after 60 s, deep sleep 1 h.
+  - board: nice_nano
+    shield: dabase_v2_right
+    cmake-args: -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=3600000
+    # Exp80: USB logging/shell on the right half to capture PS/2 drops.
     snippet: zmk-usb-logging
-    artifact-name: dabase_v2_dongle-usb-log
-  - board: xiao_ble
-    shield: dabase_v2_dongle
-    snippet: studio-rpc-usb-uart
-    cmake-args: -DCONFIG_ZMK_STUDIO=y
-    artifact-name: dabase_v2_dongle_with_studio
+    artifact-name: dabase--v2_right-central
+
+  # Left half: split peripheral only (no central role, no dongle).
   - board: nice_nano
     shield: dabase_v2_left
     cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=5400000
     # Exp78: no zmk-usb-logging snippet -> log/shell off on the battery half.
-    artifact-name: dabase_v2_left
-  # Exp81: trackpoint rail power policy (idle cut + sleep pin isolation).
-  # CONFIG_ZMK_IDLE_TIMEOUT is the "no key and no pointer motion" window that
-  # cuts the TP rail; deep sleep is 1 h (was 1.5 h). The left half stays at
-  # 1.5 h on purpose - it is the unchanged control for this experiment.
-  - board: nice_nano
-    shield: dabase_v2_right
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=n -DCONFIG_ZMK_SPLIT_BLE_PERIPHERAL_STACK_SIZE=2048 -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=3600000
-    # Exp80: USB logging/shell back on the right half to capture PS/2 drops.
-    # (Left half stays logging-free per Exp79.)
-    snippet: zmk-usb-logging
-    artifact-name: dabase_v2_right-ps2-direct
-  # Exp69 fresh: standalone USB right half (flash FIRST — defaults role central)
-  - board: nice_nano
-    shield: dabase_v2_right
-    cmake-args: -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=5400000
-    snippet: zmk-usb-logging
-    artifact-name: dabase_v2_right-standalone-usb
+    artifact-name: dabase--v2_left-peripheral
 
   - board: nice_nano
-    shield: dabase_v2_left
-    cmake-args: -DCONFIG_ZMK_SPLIT_ROLE_CENTRAL=y -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=5400000
-    snippet: zmk-usb-logging
-    artifact-name: dabase_v2_left-standalone-usb
-
-
-  - board: nice_nano
-    shield: settings_reset
-  - board: xiao_ble
     shield: settings_reset

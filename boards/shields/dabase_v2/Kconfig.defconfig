@@ -1,16 +1,6 @@
 # Copyright (c) 2020 The ZMK Contributors
 # SPDX-License-Identifier: MIT
 
-if SHIELD_DABASE_V2_DONGLE
-
-config ZMK_KEYBOARD_NAME
-	default "Dabase_v2 tmls"
-	
-config ZMK_SPLIT_BLE_ROLE_CENTRAL
-	default y
-
-endif
-
 if SHIELD_DABASE_V2_RIGHT
 
 config ZMK_SPLIT_ROLE_CENTRAL
@@ -18,7 +8,7 @@ config ZMK_SPLIT_ROLE_CENTRAL
 
 endif
 
-if SHIELD_DABASE_V2_LEFT || SHIELD_DABASE_V2_RIGHT || SHIELD_DABASE_V2_DONGLE 
+if SHIELD_DABASE_V2_LEFT || SHIELD_DABASE_V2_RIGHT
 
 config ZMK_SPLIT
 	default y
