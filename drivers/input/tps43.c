@@ -559,8 +559,28 @@ static void tps43_work_handler(struct k_work *work) {
             if (config->invert_scroll_y) {
                 rel_y = -rel_y;
             }
-            int16_t h_wheel = (rel_x * config->scroll_sensitivity) / 100;
-            int16_t v_wheel = (rel_y * config->scroll_sensitivity) / 100;
+            /* Keep the sub-count remainder: at scroll-sensitivity 30 a
+             * cross-axis delta under 4 counts would otherwise truncate to
+             * zero and small diagonal components would vanish entirely. */
+            int32_t h = (int32_t)rel_x * config->scroll_sensitivity +
+                        drv_data->scroll_h_remainder;
+            int32_t v = (int32_t)rel_y * config->scroll_sensitivity +
+                        drv_data->scroll_v_remainder;
+            int16_t h_wheel = (int16_t)(h / 100);
+            int16_t v_wheel = (int16_t)(v / 100);
+            drv_data->scroll_h_remainder = (int16_t)(h - (int32_t)h_wheel * 100);
+            drv_data->scroll_v_remainder = (int16_t)(v - (int32_t)v_wheel * 100);
+
+#if IS_ENABLED(CONFIG_INPUT_TPS43_RAW_DIAG)
+            {
+                static int64_t last_scroll_diag;
+                if (k_uptime_get() - last_scroll_diag >= 100) {
+                    last_scroll_diag = k_uptime_get();
+                    LOG_INF("scroll raw dx=%d dy=%d -> h=%d v=%d", rel_x, rel_y,
+                            h_wheel, v_wheel);
+                }
+            }
+#endif
             LOG_DBG("Scrolling h=%d v=%d", h_wheel, v_wheel);
             input_report_rel(dev, INPUT_REL_HWHEEL, h_wheel, false, K_FOREVER);
             input_report_rel(dev, INPUT_REL_WHEEL, v_wheel, true, K_FOREVER);
