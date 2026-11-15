@@ -28,8 +28,11 @@ When the devicetree node has no `rdy-gpios`, the driver now reads on a
   `BTN_TOUCH` is not reported by default (`CONFIG_INPUT_TPS43_REPORT_TOUCH`),
   because ZMK maps it to a held left mouse button
 - scroll reports both wheel axes by default
-  (`CONFIG_INPUT_TPS43_SCROLL_BOTH_AXES`), so diagonal swipes scroll
-  diagonally; the upstream dominant-axis behaviour is still available
+  (`CONFIG_INPUT_TPS43_SCROLL_BOTH_AXES`) and carries sub-count remainders
+  so slow scrolls are not truncated. NOTE: the IQS5xx gesture engine
+  resolves each scroll window to a single axis before reporting (measured:
+  dx=0/dy=N or dx=N/dy=0), so diagonal scrolling cannot be produced from
+  the scroll gesture on this pad.
 - `CONFIG_INPUT_TPS43_RAW_DIAG` prints the raw report window for bring-up
 
 Everything else (init sequence, ACK_RESET, ATI, configuration writes,
