@@ -51,6 +51,17 @@ config INPUT_TPS43_SCROLL_BOTH_AXES
       one axis. With this enabled both the horizontal and vertical wheel are
       reported from the same window and diagonal scrolling works.
 
+config INPUT_TPS43_LAYER_KEEPALIVE_MS
+    int "Keep the temp layer alive while a finger is on the pad (ms, 0 = off)"
+    range 0 1000
+    default 100
+    help
+      dabase_v2: with the pad's gestures disabled, mouse buttons come from a
+      ZMK temp layer that is only re-armed by pad events. Emitting a benign
+      zero REL_MISC event this often while a finger is in contact keeps the
+      layer active during a still touch (and for the temp layer's own
+      timeout after the finger lifts). 0 disables the keep-alive.
+
 config INPUT_TPS43_RAW_DIAG
     bool "Log the raw report window (bring-up)"
     default n

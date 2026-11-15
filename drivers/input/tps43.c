@@ -484,6 +484,20 @@ static void tps43_work_handler(struct k_work *work) {
         drv_data->touch_release_count = 0;
     }
 
+#if IS_ENABLED(CONFIG_INPUT_TPS43_LAYER_KEEPALIVE_MS)
+    /* dabase_v2: keep the temp layer (mouse buttons on the thumb cluster)
+     * active while a finger is on the pad, not only while it moves. ZMK's
+     * temp-layer processor re-arms its timer on every input event, so a
+     * harmless zero REL_MISC event is enough; the HID mapper ignores MISC
+     * and sync=false keeps it out of the mouse report. */
+    if (is_touching && CONFIG_INPUT_TPS43_LAYER_KEEPALIVE_MS > 0 &&
+        k_uptime_get() - drv_data->last_keepalive_ms >=
+            CONFIG_INPUT_TPS43_LAYER_KEEPALIVE_MS) {
+        drv_data->last_keepalive_ms = k_uptime_get();
+        input_report_rel(dev, INPUT_REL_MISC, 0, false, K_FOREVER);
+    }
+#endif
+
     if (is_touching != drv_data->touching) {
         drv_data->touching = is_touching;
         LOG_INF("Touch state changed: %s", is_touching ? "down" : "up");

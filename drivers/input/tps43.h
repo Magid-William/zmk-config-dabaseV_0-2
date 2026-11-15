@@ -279,6 +279,7 @@ struct tps43_drv_data {
     int16_t scroll_v_remainder;
     int16_t xy_x_remainder;
     int16_t xy_y_remainder;
+    int64_t last_keepalive_ms;
 };
 
 int tps43_set_sleep(const struct device *dev, bool sleep);
