@@ -612,19 +612,24 @@ static void tps43_work_handler(struct k_work *work) {
             input_report_rel(dev, INPUT_REL_MISC, zoom_delta, true, K_FOREVER);
             is_zoom_active = false;
         } else {
-            // Normal cursor movement
-            if (rel_x != 0 ) {
-                int32_t scaled_x = ((int32_t)rel_x * config->sensitivity) / 100;
-                rel_x = (int16_t)CLAMP(scaled_x, INT16_MIN, INT16_MAX);
-            }
-            if (rel_y != 0) { 
-                int32_t scaled_y = ((int32_t)rel_y * config->sensitivity) / 100;
-                rel_y = (int16_t)CLAMP(scaled_y, INT16_MIN, INT16_MAX);
-            }
-            LOG_DBG("Sending movement: dx=%d, dy=%d", rel_x, rel_y);
+            /* Normal cursor movement, scaled by `sensitivity` percent.
+             * dabase_v2 patch: carry the sub-count remainder per axis, so
+             * e.g. sensitivity 90 does not truncate slow movement to zero. */
+            int32_t sx = (int32_t)rel_x * config->sensitivity +
+                         drv_data->xy_x_remainder;
+            int32_t sy = (int32_t)rel_y * config->sensitivity +
+                         drv_data->xy_y_remainder;
+            int32_t ox = CLAMP(sx / 100, INT16_MIN, INT16_MAX);
+            int32_t oy = CLAMP(sy / 100, INT16_MIN, INT16_MAX);
 
-            input_report_rel(dev, INPUT_REL_X, rel_x, false, K_FOREVER);
-            input_report_rel(dev, INPUT_REL_Y, rel_y, true, K_FOREVER);
+            drv_data->xy_x_remainder = (int16_t)(sx - ox * 100);
+            drv_data->xy_y_remainder = (int16_t)(sy - oy * 100);
+
+            if (ox != 0 || oy != 0) {
+                LOG_DBG("Sending movement: dx=%d, dy=%d", (int)ox, (int)oy);
+                input_report_rel(dev, INPUT_REL_X, (int16_t)ox, false, K_FOREVER);
+                input_report_rel(dev, INPUT_REL_Y, (int16_t)oy, true, K_FOREVER);
+            }
         }
     }
 

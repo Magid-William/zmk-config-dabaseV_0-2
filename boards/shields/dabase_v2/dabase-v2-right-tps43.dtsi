@@ -58,7 +58,7 @@
 
         enable-power-management;
 
-        sensitivity = <100>;
+        sensitivity = <90>;
         scroll-sensitivity = <30>;
         zoom-sensitivity = <50>;
         filter-settings = <0x0B>;

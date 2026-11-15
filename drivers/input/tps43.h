@@ -277,6 +277,8 @@ struct tps43_drv_data {
     uint8_t touch_release_count;
     int16_t scroll_h_remainder;
     int16_t scroll_v_remainder;
+    int16_t xy_x_remainder;
+    int16_t xy_y_remainder;
 };
 
 int tps43_set_sleep(const struct device *dev, bool sleep);
