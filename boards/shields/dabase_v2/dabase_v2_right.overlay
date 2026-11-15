@@ -121,3 +121,15 @@
         boot-mute-ms = <800>;
     };
 };
+
+&gpio0 {
+    /* Boot default: rail on before any driver probes (the policy takes the
+     * level over at APPLICATION init). Without this the pad would be dark
+     * during its own driver init. */
+    ext_vcc_hog {
+        gpio-hog;
+        gpios = <13 GPIO_ACTIVE_HIGH>;
+        output-high;
+        line-name = "ext-vcc";
+    };
+};

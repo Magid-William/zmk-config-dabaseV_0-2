@@ -16,10 +16,10 @@
  *   SLEEP   -> same as IDLE
  *   USB     -> never cut: VBUS has no battery budget
  *
- * Why the I2C pins are pushed to their sleep state on cut: the pinctrl
- * default state enables the internal pull-ups, and with the pad unpowered
- * those pull-ups push current through its ESD diodes into its dead VCC rail
- * (measured in the field as ~4%/night on the TrackPoint build).
+ * NOTE: pin isolation (applying the I2C sleep pinctrl so the internal
+ * pull-ups cannot leak into the unpowered pad) is NOT in this revision: the
+ * first attempt that touched pinctrl from here wedged the console. Re-add it
+ * as a separate, isolated change once this base policy is proven.
  *
  * Why the rail GPIO is driven directly instead of ext_power_disable():
  * ext_power_generic_disable() schedules a settings save on every call, so an
@@ -32,7 +32,6 @@
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
-#include <zephyr/drivers/pinctrl.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
@@ -54,14 +53,8 @@ LOG_MODULE_DECLARE(tps43, CONFIG_INPUT_LOG_LEVEL);
 
 #define RAIL_NODE DT_INST(0, dabase_tps43_rail)
 
-/* A second, independent pinctrl config for the I2C node, so the sleep state
- * (bias disabled) can be applied from here without touching the I2C driver. */
-PINCTRL_DT_DEFINE(DT_NODELABEL(i2c0));
-
 static const struct gpio_dt_spec rail = GPIO_DT_SPEC_INST_GET(0, gpios);
 static const struct device *const pad = DEVICE_DT_GET(DT_NODELABEL(tps43_trackpad));
-static const struct pinctrl_dev_config *i2c_pcfg =
-    PINCTRL_DT_DEV_CONFIG_GET(DT_NODELABEL(i2c0));
 
 static bool rail_powered;
 static struct k_work_delayable boot_mute_work;
@@ -76,7 +69,6 @@ static void rail_cut(void) {
      * the bus lines low-leak. */
     (void)tps43_rail_power(pad, false);
     (void)gpio_pin_set_dt(&rail, 0);
-    (void)pinctrl_apply_state(i2c_pcfg, PINCTRL_STATE_SLEEP);
 
     LOG_INF("TP rail: off (idle)");
 }
@@ -100,7 +92,6 @@ static void rail_arm(void) {
     }
     rail_powered = true;
 
-    (void)pinctrl_apply_state(i2c_pcfg, PINCTRL_STATE_DEFAULT);
     (void)gpio_pin_set_dt(&rail, 1);
 
     LOG_INF("TP rail: on (%d ms mute)", DT_INST_PROP(0, boot_mute_ms));
@@ -164,17 +155,13 @@ static int rail_policy_init(void) {
 
     k_work_init_delayable(&boot_mute_work, boot_mute_handler);
 
-    /* Power the rail before the pad driver probes (priority 89 < 90). The
-     * driver's own retry loop covers the pad's boot time. */
-    if (gpio_pin_configure_dt(&rail, GPIO_OUTPUT_ACTIVE) != 0) {
-        LOG_ERR("TP rail: cannot configure rail GPIO");
-        return -EIO;
-    }
+    /* The devicetree gpio-hog has already driven the rail high before the
+     * pad driver probed; from here on this policy owns the level. */
     rail_powered = true;
 
     return 0;
 }
 
-SYS_INIT(rail_policy_init, POST_KERNEL, 89);
+SYS_INIT(rail_policy_init, APPLICATION, 92);
 
 #endif /* rail node present && INPUT_TPS43 */
