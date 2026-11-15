@@ -72,11 +72,14 @@
 
         /* Mounting: the pad's sensor axes are rotated 90 degrees vs the
          * PCB, so a horizontal finger movement was reported as vertical.
-         * switch-xy swaps them inside the pad (XY_CONFIG_0). Further tuning:
+         * switch-xy swaps them inside the pad (XY_CONFIG_0).
+         * invert-scroll-x: two-finger horizontal scroll ran backwards while
+         * vertical was correct. Further tuning if needed:
          * invert-x;
          * invert-y;
          * invert-scroll-y;
          */
         switch-xy;
+        invert-scroll-x;
     };
 };
