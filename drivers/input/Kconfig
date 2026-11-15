@@ -1,0 +1,36 @@
+config INPUT_TPS43
+    bool "Azoteq TPS43 I2C Touchpad Input Device"
+    default y
+    depends on I2C
+    depends on INPUT
+    help
+      Enable driver for Azoteq touchpad input device over I2C interface.
+      Supports multitouch gestures, scrolling, clicks and power management.
+
+if INPUT_TPS43
+
+config INPUT_TPS43_INIT_PRIORITY
+    int "Init priority"
+    default 90
+    help
+      Device driver initialization priority.
+
+config INPUT_TPS43_POLL_INTERVAL_MS
+    int "Polling interval while touched, when no rdy-gpios is wired (ms)"
+    range 1 1000
+    default 5
+    help
+      dabase_v2 patch: the PCB does not route the trackpad RDY line, so the
+      driver cannot be interrupt driven. When the devicetree node has no
+      rdy-gpios, the driver reads the report window on a timer instead.
+      This is the period used while a finger is on the pad.
+
+config INPUT_TPS43_POLL_IDLE_INTERVAL_MS
+    int "Polling interval while untouched, when no rdy-gpios is wired (ms)"
+    range 1 2000
+    default 20
+    help
+      dabase_v2 patch: slower poll period used while no finger is detected,
+      to keep the I2C bus (and the MCU) quiet when the pad is not in use.
+
+endif # INPUT_TPS43

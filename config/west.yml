@@ -14,22 +14,6 @@ manifest:
       revision: ac7f75b8
       import: app/west.yml
 
-    # Exp70: direct PS/2 on the right half (gpio-ps2 backend,
-    # NO_HOST_COMMANDS). Driver Exp70 = +4096 cb-workqueue stack + no-resend +
-    # per-axis report-interval accumulator fix + it3 printk stream + it4
-    # read-timeout off the system workqueue + ISR-safe logging + it4c 8ms
-    # clock-pause tolerance (this TP pauses mid-byte; AVR needed 7.5ms).
-    # Exp74: + on-device PowerCurve (curve-sens/rate/exponent/start DT props).
-    # Exp77: + single-packet magnitude jump filter
-    # (ZMK_INPUT_MOUSE_PS2_DELTA_MAX, on via dabase_v2_right.conf).
-    # Exp80: + ordered byte/error callback queue + read-error notification and
-    # pointer hold/resync after a lost byte (ZMK_INPUT_MOUSE_PS2_HOLD_ON_DROP).
-    # Exp81: + trackpoint rail power policy (idle cut, sleep pin isolation);
-    # enables ZMK_PS2_TP_POWER_POLICY in dabase_v2_right.conf.
-    - name: zmk-ps2-trackpoint-driver
-      remote: maged
-      revision: 797205aadb1e3acb5382a636bb608a2d71e0891e
-
     - name: zmk-behavior-battery-percentage-printer
       remote: badjeff
       revision: main
