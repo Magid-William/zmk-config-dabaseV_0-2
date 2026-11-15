@@ -70,10 +70,10 @@
          * a late catch-up jump. */
         report-rate-active = <8>;
 
-        scroll;
-        single-tap;
-        two-finger-tap;
-        press-and-hold;
+        /* Pointer only, like the TrackPoint was: no tap clicks, no two-finger
+         * scroll, no press-and-hold drag. Buttons come from the thumb
+         * cluster while the temp layer (layer 5) is active, scrolling from
+         * hold-J (layer 6) + finger movement. */
 
         /* Mounting: the pad's sensor axes are rotated 90 degrees vs the
          * PCB, so a horizontal finger movement was reported as vertical.
