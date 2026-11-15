@@ -20,6 +20,14 @@ When the devicetree node has no `rdy-gpios`, the driver now reads on a
 - `CONFIG_INPUT_TPS43_POLL_INTERVAL_MS` (default 5 ms) while a finger is down
 - `CONFIG_INPUT_TPS43_POLL_IDLE_INTERVAL_MS` (default 20 ms) while untouched
 - the poll is cancelled when the pad is suspended and restarted on resume
+- `EVENT_MODE` stays off without RDY: it suppresses the communication window
+  until an event occurs, so every poll would be NACKed
+- a NACKed read is retried after 250 us (datasheet 8.8.2, "Force
+  Communication": a low-power pad NACKs the first addressing on purpose)
+- an empty window between two report windows does not end a touch, and
+  `BTN_TOUCH` is not reported by default (`CONFIG_INPUT_TPS43_REPORT_TOUCH`),
+  because ZMK maps it to a held left mouse button
+- `CONFIG_INPUT_TPS43_RAW_DIAG` prints the raw report window for bring-up
 
 Everything else (init sequence, ACK_RESET, ATI, configuration writes,
 gestures, power management) is upstream behaviour.

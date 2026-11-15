@@ -487,7 +487,14 @@ static void tps43_work_handler(struct k_work *work) {
     if (is_touching != drv_data->touching) {
         drv_data->touching = is_touching;
         LOG_INF("Touch state changed: %s", is_touching ? "down" : "up");
+#if IS_ENABLED(CONFIG_INPUT_TPS43_REPORT_TOUCH)
+        /* ZMK's input listener maps BTN_TOUCH to mouse button 0, so
+         * reporting it makes every finger contact a held left click (the
+         * desktop selects text while the pointer moves). The pad's own
+         * tap / press-and-hold gestures already emit BTN_0, so this is off
+         * by default. */
         input_report_key(dev, INPUT_BTN_TOUCH, is_touching ? 1 : 0, true, K_FOREVER);
+#endif
     }
 
     if (gestures_events[0] != 0 || gestures_events[1] != 0) {

@@ -33,6 +33,15 @@ config INPUT_TPS43_POLL_IDLE_INTERVAL_MS
       dabase_v2 patch: slower poll period used while no finger is detected,
       to keep the I2C bus (and the MCU) quiet when the pad is not in use.
 
+config INPUT_TPS43_REPORT_TOUCH
+    bool "Report BTN_TOUCH on finger contact"
+    default n
+    help
+      Report INPUT_BTN_TOUCH when a finger touches the pad. ZMK's input
+      listener turns that into a held left mouse button, which makes every
+      touch a drag/selection. Off by default; the pad's tap and
+      press-and-hold gestures still click and drag.
+
 config INPUT_TPS43_RAW_DIAG
     bool "Log the raw report window (bring-up)"
     default n
