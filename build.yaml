@@ -20,7 +20,10 @@ include:
   # owns the Azoteq TPS43 touchpad (I2C0) and forwards to the left half.
   - board: nice_nano
     shield: dabase_v2_right
-    cmake-args: -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_TIMEOUT=60000 -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=3600000
+    # Idle cut for the pad's power rail: ZMK goes IDLE 5 s after the last key
+    # or pointer event, and drivers/input/tps43_power_policy.c cuts the rail
+    # then. Deep sleep still follows ZMK_IDLE_SLEEP_TIMEOUT (1 h).
+    cmake-args: -DCONFIG_ZMK_SLEEP=y -DCONFIG_ZMK_IDLE_TIMEOUT=5000 -DCONFIG_ZMK_IDLE_SLEEP_TIMEOUT=3600000
     # Exp80: USB logging/shell on the right half to capture PS/2 drops.
     snippet: zmk-usb-logging
     artifact-name: dabase--v2_right-central
