@@ -453,6 +453,23 @@ static void tps43_work_handler(struct k_work *work) {
     int16_t rel_x = (int16_t)((touch_data[5] << 8) | touch_data[6]);
     int16_t rel_y = (int16_t)((touch_data[7] << 8) | touch_data[8]);
 
+#if IS_ENABLED(CONFIG_INPUT_TPS43_RAW_DIAG)
+    /* dabase_v2 bring-up: show the raw report window when something moves,
+     * plus a 2 s heartbeat so silent reads (all zeros) are visible too. */
+    {
+        static int64_t last_diag_ms;
+        int64_t now = k_uptime_get();
+        bool active = num_fingers || rel_x || rel_y || touch_data[0] || touch_data[1];
+
+        if ((active && now - last_diag_ms >= 100) || now - last_diag_ms >= 2000) {
+            last_diag_ms = now;
+            LOG_INF("raw g=%02x/%02x s=%02x/%02x n=%u dx=%d dy=%d",
+                    touch_data[0], touch_data[1], touch_data[2], touch_data[3],
+                    num_fingers, rel_x, rel_y);
+        }
+    }
+#endif
+
     bool is_touching = (num_fingers > 0);
     if (is_touching != drv_data->touching) {
         drv_data->touching = is_touching;

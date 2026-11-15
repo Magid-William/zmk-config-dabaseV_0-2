@@ -33,4 +33,11 @@ config INPUT_TPS43_POLL_IDLE_INTERVAL_MS
       dabase_v2 patch: slower poll period used while no finger is detected,
       to keep the I2C bus (and the MCU) quiet when the pad is not in use.
 
+config INPUT_TPS43_RAW_DIAG
+    bool "Log the raw report window (bring-up)"
+    default n
+    help
+      dabase_v2 bring-up aid: prints the raw gesture/status/finger/relative
+      window read from the pad, when it changes and every 2 s.
+
 endif # INPUT_TPS43

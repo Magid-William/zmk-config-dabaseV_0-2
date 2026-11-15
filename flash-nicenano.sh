@@ -62,15 +62,17 @@ shell_cmd() {
     local port="$1" cmd="$2" i
     configure_port "$port"
     exec 9<>"$port" || return 1
-    printf '\r' >&9
+    # Writes can fail mid-command when the board resets into the bootloader;
+    # that is the expected outcome, so never abort the flash on write errors.
+    { printf '\r' >&9; } 2>/dev/null || true
     sleep 0.6
     for ((i = 0; i < ${#cmd}; i++)); do
-        printf '%s' "${cmd:i:1}" >&9
+        { printf '%s' "${cmd:i:1}" >&9; } 2>/dev/null || true
         sleep 0.03
     done
-    printf '\r' >&9
+    { printf '\r' >&9; } 2>/dev/null || true
     sleep 0.3
-    exec 9>&-
+    exec 9>&- 2>/dev/null || true
     return 0
 }
 
