@@ -27,6 +27,9 @@ When the devicetree node has no `rdy-gpios`, the driver now reads on a
 - an empty window between two report windows does not end a touch, and
   `BTN_TOUCH` is not reported by default (`CONFIG_INPUT_TPS43_REPORT_TOUCH`),
   because ZMK maps it to a held left mouse button
+- scroll reports both wheel axes by default
+  (`CONFIG_INPUT_TPS43_SCROLL_BOTH_AXES`), so diagonal swipes scroll
+  diagonally; the upstream dominant-axis behaviour is still available
 - `CONFIG_INPUT_TPS43_RAW_DIAG` prints the raw report window for bring-up
 
 Everything else (init sequence, ACK_RESET, ATI, configuration writes,

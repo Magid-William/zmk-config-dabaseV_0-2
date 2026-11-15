@@ -549,6 +549,22 @@ static void tps43_work_handler(struct k_work *work) {
         }
 
         if (is_scroll_active) {
+#if IS_ENABLED(CONFIG_INPUT_TPS43_SCROLL_BOTH_AXES)
+            /* dabase_v2 patch: report both wheel axes from the same window,
+             * so a diagonal two-finger swipe scrolls diagonally instead of
+             * being flattened onto whichever component is larger. */
+            if (config->invert_scroll_x) {
+                rel_x = -rel_x;
+            }
+            if (config->invert_scroll_y) {
+                rel_y = -rel_y;
+            }
+            int16_t h_wheel = (rel_x * config->scroll_sensitivity) / 100;
+            int16_t v_wheel = (rel_y * config->scroll_sensitivity) / 100;
+            LOG_DBG("Scrolling h=%d v=%d", h_wheel, v_wheel);
+            input_report_rel(dev, INPUT_REL_HWHEEL, h_wheel, false, K_FOREVER);
+            input_report_rel(dev, INPUT_REL_WHEEL, v_wheel, true, K_FOREVER);
+#else
             // Scroll processing: keep only dominant axis
             if (abs(rel_x) > abs(rel_y)) {
                 // Horizontal scroll
@@ -567,6 +583,7 @@ static void tps43_work_handler(struct k_work *work) {
                 LOG_DBG("Scrolling %d vertically", wheel);
                 input_report_rel(dev, INPUT_REL_WHEEL, wheel, true, K_FOREVER);
             }
+#endif
             is_scroll_active = false;
         } else if (is_zoom_active) {
             // Zoom processing: the zoom amount comes in via rel_x

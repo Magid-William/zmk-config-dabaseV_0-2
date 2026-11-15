@@ -42,6 +42,15 @@ config INPUT_TPS43_REPORT_TOUCH
       touch a drag/selection. Off by default; the pad's tap and
       press-and-hold gestures still click and drag.
 
+config INPUT_TPS43_SCROLL_BOTH_AXES
+    bool "Report both scroll axes per report window"
+    default y
+    help
+      dabase_v2 patch: the upstream scroll path keeps only the dominant axis
+      of each report window, so diagonal two-finger swipes are flattened onto
+      one axis. With this enabled both the horizontal and vertical wheel are
+      reported from the same window and diagonal scrolling works.
+
 config INPUT_TPS43_RAW_DIAG
     bool "Log the raw report window (bring-up)"
     default n
