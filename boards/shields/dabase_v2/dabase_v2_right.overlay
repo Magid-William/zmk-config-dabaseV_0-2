@@ -68,11 +68,12 @@
              * +-1 count of resting-finger noise is a full wheel tick.
              * dabase_scroll_downsample halves X/Y with plain truncation
              * (no remainder tracking, unlike the stock zip_*_scaler), so a
-             * 1-count blip maps to 0 ticks while real scrolling still ticks
-             * at half speed. Raise the divisor to 3 if blips still get
-             * through; this path only affects layer 6, the pointer keeps
-             * full resolution. */
-            input-processors = <&dabase_scroll_downsample 1 2>,
+             * deltas under the divisor map to 0 ticks. 1/2 still let 2-3
+             * count blips through as one tick ~5 times a second, so the
+             * divisor is 4: 1-3 counts truncate away, real scroll deltas
+             * (>=4) still tick. This path only affects layer 6, the pointer
+             * keeps full resolution. */
+            input-processors = <&dabase_scroll_downsample 1 4>,
                                <&zip_xy_to_scroll_mapper>,
                                <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>;
             process-next;
