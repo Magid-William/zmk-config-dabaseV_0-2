@@ -281,6 +281,7 @@ struct tps43_drv_data {
     int16_t xy_y_remainder;
     int16_t gate_x;
     int16_t gate_y;
+    uint8_t gate_run;
     int64_t last_keepalive_ms;
     bool rail_off;
 };

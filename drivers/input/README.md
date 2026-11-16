@@ -33,6 +33,15 @@ When the devicetree node has no `rdy-gpios`, the driver now reads on a
   resolves each scroll window to a single axis before reporting (measured:
   dx=0/dy=N or dx=N/dy=0), so diagonal scrolling cannot be produced from
   the scroll gesture on this pad.
+- `CONFIG_INPUT_TPS43_JITTER_GATE_COUNTS` (default 2) accumulates sub-threshold
+  per-axis deltas and only releases them when an axis reaches the count, so
+  the resting finger's +-1 counts do not drive the sensitivity remainder into
+  1 px steps
+- `CONFIG_INPUT_TPS43_JITTER_MIN_RUN` (default 2) additionally requires a
+  movement run of that many reports: a report with no movement ends the run,
+  so isolated one-report blips are dropped. Measured on a resting finger, the
+  count gate alone still emitted 82 reports per 8 s, which the layer-6 scroll
+  path turns into full wheel ticks; the run gate cuts that to 11
 - `CONFIG_INPUT_TPS43_POWER_POLICY` (dabase_v2) gates the pad's VCC rail on
   ZMK's activity state, ported from the TrackPoint field fix: cut on idle,
   restore on activity or USB, then re-run the whole init because the IQS5xx

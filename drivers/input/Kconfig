@@ -75,6 +75,20 @@ config INPUT_TPS43_JITTER_GATE_COUNTS
       cancels itself out while deliberate slow movement still passes (at most
       one report later). 0 disables the gate and restores the raw path.
 
+config INPUT_TPS43_JITTER_MIN_RUN
+    int "Movement reports a run must have before it is emitted (0/1 = no run gate)"
+    range 0 10
+    default 2
+    depends on INPUT_TPS43
+    help
+      dabase_v2: a finger resting on the pad produces isolated single-report
+      blips of +-1 count, and on the layer-6 scroll path each one becomes a
+      full wheel tick. Requiring this many movement reports in a row (a zero
+      report ends the run) drops the isolated blips. Measured on a resting
+      finger: 82 emitted reports per 8 s with only the count gate, 11 with a
+      run of 2. Continuous slow movement still produces runs, because the pad
+      accumulates its delta since the previous read.
+
 config INPUT_TPS43_POWER_POLICY
     bool "Cut the pad's power rail while the keyboard is idle"
     default n
