@@ -62,6 +62,19 @@ config INPUT_TPS43_LAYER_KEEPALIVE_MS
       layer active during a still touch (and for the temp layer's own
       timeout after the finger lifts). 0 disables the keep-alive.
 
+config INPUT_TPS43_JITTER_GATE_COUNTS
+    int "Ignore pad coordinate noise below this many counts (0 = off)"
+    range 0 20
+    default 2
+    depends on INPUT_TPS43
+    help
+      dabase_v2: with a finger resting on the pad, the IQS5xx still reports
+      +-1-2 counts of coordinate noise per report window. The sensitivity
+      remainder turns that into a visible 1-2 px wobble. The gate holds
+      deltas back per axis until they reach this many counts, so oscillation
+      cancels itself out while deliberate slow movement still passes (at most
+      one report later). 0 disables the gate and restores the raw path.
+
 config INPUT_TPS43_POWER_POLICY
     bool "Cut the pad's power rail while the keyboard is idle"
     default n

@@ -65,14 +65,11 @@
         sensitivity = <90>;
         scroll-sensitivity = <30>;
         zoom-sensitivity = <50>;
-        /* 0x0F = IIR + MAV + ALP with the *fixed* IIR coefficient instead of
-         * the speed-adaptive one (0x0B). At rest the pad reports +-1-2 counts
-         * of coordinate noise per 8 ms window, which the remainder
-         * accumulator turned into a visible 1-2 px wobble under a resting
-         * finger; the fixed coefficient is the strongest low-speed smoothing
-         * the pad offers. If fast flicks feel damped, go back to 0x0B and cut
-         * the noise in the driver instead. */
-        filter-settings = <0x0F>;
+        /* 0x0B = IIR + MAV + ALP with the speed-adaptive IIR, the pad's
+         * stock filtering. 0x0F (fixed IIR coefficient) was measured to make
+         * the resting-finger jitter *worse*, so the noise is handled in the
+         * driver by CONFIG_INPUT_TPS43_JITTER_GATE_COUNTS instead. */
+        filter-settings = <0x0B>;
         x-resolution = <2048>;
         y-resolution = <1792>;
 

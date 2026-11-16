@@ -511,6 +511,9 @@ static void tps43_work_handler(struct k_work *work) {
 
     if (is_touching != drv_data->touching) {
         drv_data->touching = is_touching;
+        /* Never carry noise between contacts. */
+        drv_data->gate_x = 0;
+        drv_data->gate_y = 0;
         LOG_INF("Touch state changed: %s", is_touching ? "down" : "up");
 #if IS_ENABLED(CONFIG_INPUT_TPS43_REPORT_TOUCH)
         /* ZMK's input listener maps BTN_TOUCH to mouse button 0, so
@@ -647,12 +650,34 @@ static void tps43_work_handler(struct k_work *work) {
             input_report_rel(dev, INPUT_REL_MISC, zoom_delta, true, K_FOREVER);
             is_zoom_active = false;
         } else {
+            int16_t move_x = rel_x;
+            int16_t move_y = rel_y;
+
+#if CONFIG_INPUT_TPS43_JITTER_GATE_COUNTS > 0
+            /* dabase_v2: resting-finger noise gate (see Kconfig). Accumulate
+             * sub-threshold deltas per axis and only let them through once an
+             * axis reaches the threshold, so +1/-1 sensor noise nets to zero
+             * instead of driving the remainder accumulator into 1 px steps. */
+            drv_data->gate_x += rel_x;
+            drv_data->gate_y += rel_y;
+            if (abs(drv_data->gate_x) < CONFIG_INPUT_TPS43_JITTER_GATE_COUNTS &&
+                abs(drv_data->gate_y) < CONFIG_INPUT_TPS43_JITTER_GATE_COUNTS) {
+                move_x = 0;
+                move_y = 0;
+            } else {
+                move_x = drv_data->gate_x;
+                move_y = drv_data->gate_y;
+                drv_data->gate_x = 0;
+                drv_data->gate_y = 0;
+            }
+#endif
+
             /* Normal cursor movement, scaled by `sensitivity` percent.
              * dabase_v2 patch: carry the sub-count remainder per axis, so
              * e.g. sensitivity 90 does not truncate slow movement to zero. */
-            int32_t sx = (int32_t)rel_x * config->sensitivity +
+            int32_t sx = (int32_t)move_x * config->sensitivity +
                          drv_data->xy_x_remainder;
-            int32_t sy = (int32_t)rel_y * config->sensitivity +
+            int32_t sy = (int32_t)move_y * config->sensitivity +
                          drv_data->xy_y_remainder;
             int32_t ox = CLAMP(sx / 100, INT16_MIN, INT16_MAX);
             int32_t oy = CLAMP(sy / 100, INT16_MIN, INT16_MAX);
@@ -1693,6 +1718,8 @@ int tps43_rail_power(const struct device *dev, bool on) {
         drv_data->device_ready = false;
         drv_data->touching = false;
         drv_data->touch_release_count = 0;
+        drv_data->gate_x = 0;
+        drv_data->gate_y = 0;
         drv_data->drag_active = false;
         k_work_cancel_delayable(&drv_data->poll_work);
         LOG_INF("rail off: polling stopped");
