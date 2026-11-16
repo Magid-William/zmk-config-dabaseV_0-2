@@ -17,6 +17,7 @@
 #include "dabase_v2.dtsi"
 #include "dabase-v2-right-tps43.dtsi"
 #include <behaviors.dtsi>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
 
 #include <input/processors.dtsi>
 #include <dt-bindings/zmk/input_transform.h>
@@ -61,10 +62,19 @@
 
         scroll_override {
             layers = <6>;
-            /* Hold J -> finger movement becomes scroll. 1:1: a trackpad
-             * emits pixel-sized deltas, unlike the PS/2 TrackPoint's tiny
-             * counts. */
-            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>;
+            /* Hold J -> finger movement becomes scroll. The mapper is 1:1
+             * (a trackpad emits pixel-sized deltas, unlike the PS/2
+             * TrackPoint's tiny counts), which also means one surviving
+             * +-1 count of resting-finger noise is a full wheel tick.
+             * dabase_scroll_downsample halves X/Y with plain truncation
+             * (no remainder tracking, unlike the stock zip_*_scaler), so a
+             * 1-count blip maps to 0 ticks while real scrolling still ticks
+             * at half speed. Raise the divisor to 3 if blips still get
+             * through; this path only affects layer 6, the pointer keeps
+             * full resolution. */
+            input-processors = <&dabase_scroll_downsample 1 2>,
+                               <&zip_xy_to_scroll_mapper>,
+                               <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>;
             process-next;
         };
 
@@ -81,6 +91,16 @@
             layers = <7>;
             input-processors = <&zip_xy_scaler 0 1>;
         };
+    };
+
+    /* Custom scaler instance: same driver as zip_xy_scaler but without
+     * `track-remainders`, so sub-divisor deltas are dropped instead of being
+     * carried into the next event. */
+    dabase_scroll_downsample: dabase_scroll_downsample {
+        compatible = "zmk,input-processor-scaler";
+        #input-processor-cells = <2>;
+        type = <INPUT_EV_REL>;
+        codes = <INPUT_REL_X INPUT_REL_Y>;
     };
 
     tp_temp_layer: tp_temp_layer {
