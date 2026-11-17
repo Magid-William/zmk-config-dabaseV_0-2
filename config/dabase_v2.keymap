@@ -63,6 +63,11 @@
             key-positions = <1 5>;
         };
 
+        clearBT {
+            bindings = <&bt BT_CLR>;
+            key-positions = <6 10>;
+        };
+
         esc {
             bindings = <&kp ESCAPE>;
             key-positions = <10 43>;
