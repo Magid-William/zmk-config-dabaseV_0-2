@@ -121,10 +121,10 @@ config INPUT_TPS43_TRACKPOINT
 config INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS
     int "Trackpoint deadzone radius (pad counts)"
     range 0 1000
-    default 77
+    default 38
     help
-      Radius around the landing point where no motion is emitted. 77 counts
-      is about 1.5 mm on the TPS43 (3 mm diameter) at 51.2 counts/mm.
+      Radius around the landing point where no motion is emitted. 38 counts
+      is about 0.75 mm on the TPS43 (1.5 mm diameter) at 51.2 counts/mm.
 
 config INPUT_TPS43_TRACKPOINT_RADIUS_COUNTS
     int "Trackpoint full-speed radius (pad counts)"
