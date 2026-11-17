@@ -446,7 +446,7 @@ static void tps43_trackpoint_diag(struct tps43_drv_data *drv_data, int32_t abs_x
 
 /* dabase_v2: radial sensitivity curve.
  *
- * Breakpoints (radius %, speed %): 0/0, 10/8, 50/30, 80/80, 100/100.
+ * Breakpoints (radius %, speed %): 0/0, 10/3, 50/20, 80/80, 100/100.
  * A monotone cubic Hermite through those points stays smooth and monotonic,
  * so most of the circle is fine control and the last fifth ramps up. The
  * raw CSS cubic-bezier(1, 0, 1, 1) would be far more aggressive (~11% at
@@ -454,7 +454,7 @@ static void tps43_trackpoint_diag(struct tps43_drv_data *drv_data, int32_t abs_x
  */
 static float tps43_tp_curve(float x) {
     static const float px[] = {0.0f, 0.10f, 0.50f, 0.80f, 1.00f};
-    static const float py[] = {0.0f, 0.08f, 0.30f, 0.80f, 1.00f};
+    static const float py[] = {0.0f, 0.03f, 0.20f, 0.80f, 1.00f};
 
     if (x <= px[0]) {
         return py[0];
@@ -2085,7 +2085,7 @@ static int tps43_tp_cmd_status(const struct shell *sh, size_t argc, char **argv)
                 (int)d->tp_deadzone, dz_r10 / 10, dz_r10 % 10, dz_d10 / 10, dz_d10 % 10);
     shell_print(sh, "  full speed at %d counts (%d.%d mm radius)",
                 (int)d->tp_radius, r10 / 10, r10 % 10);
-    shell_print(sh, "  max %d px/s, curve 10:8 50:30 80:80, scale %d counts/mm",
+    shell_print(sh, "  max %d px/s, curve 10:3 50:20 80:80, scale %d counts/mm",
                 (int)d->tp_max_speed, cpm);
     shell_print(sh, "  anchor: %s (%d,%d)",
                 d->tp_anchor_valid ? "yes" : "no", (int)d->tp_anchor_x,

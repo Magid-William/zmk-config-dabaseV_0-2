@@ -62,17 +62,14 @@
 
         scroll_override {
             layers = <6>;
-            /* Hold J -> finger movement becomes scroll. The mapper is 1:1
-             * (a trackpad emits pixel-sized deltas, unlike the PS/2
-             * TrackPoint's tiny counts), which also means one surviving
-             * +-1 count of resting-finger noise is a full wheel tick.
-             * dabase_scroll_downsample halves X/Y with plain truncation
-             * (no remainder tracking, unlike the stock zip_*_scaler), so a
-             * deltas under the divisor map to 0 ticks. 1/2 still let 2-3
-             * count blips through as one tick ~5 times a second, so the
-             * divisor is 4: 1-3 counts truncate away, real scroll deltas
-             * (>=4) still tick. This path only affects layer 6, the pointer
-             * keeps full resolution. */
+            /* Hold J -> finger movement becomes scroll. The trackpoint
+             * velocity path on this layer already goes through a deadzone,
+             * so the scaler tracks remainders: a 1 px delta accumulates
+             * until it reaches the divisor and becomes one wheel tick. That
+             * is what makes slow scrolls smooth. The old no-remainder
+             * variant dropped everything under 4 px per event, which made
+             * sub-pixel scrolling impossible. This path only affects layer
+             * 6; the normal pointer keeps full resolution. */
             input-processors = <&dabase_scroll_downsample 1 4>,
                                <&zip_xy_to_scroll_mapper>,
                                <&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>;
@@ -94,14 +91,16 @@
         };
     };
 
-    /* Custom scaler instance: same driver as zip_xy_scaler but without
-     * `track-remainders`, so sub-divisor deltas are dropped instead of being
-     * carried into the next event. */
+    /* Custom scaler instance: same driver as zip_xy_scaler, with
+     * `track-remainders` so sub-divisor movement accumulates into wheel
+     * ticks. The layer-6 path is velocity-driven and already deadzoned, so
+     * there is no resting-finger noise left to suppress here. */
     dabase_scroll_downsample: dabase_scroll_downsample {
         compatible = "zmk,input-processor-scaler";
         #input-processor-cells = <2>;
         type = <INPUT_EV_REL>;
         codes = <INPUT_REL_X INPUT_REL_Y>;
+        track-remainders;
     };
 
     tp_temp_layer: tp_temp_layer {
