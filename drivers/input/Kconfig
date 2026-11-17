@@ -118,6 +118,16 @@ config INPUT_TPS43_TRACKPOINT
       not reported while this is on. Toggle at runtime with
       `tps43_tp mode off` (the feature also pulls in live shell tuning).
 
+config INPUT_TPS43_TRACKPOINT_LAYER
+    int "Trackpoint velocity mode layer (-1 = all layers)"
+    range -1 31
+    default 6
+    help
+      dabase_v2: use the absolute-position velocity path only while this
+      keymap layer is active. -1 keeps the old behaviour of using it on every
+      layer. The default 6 is the scroll layer (hold J), so the normal layers
+      keep the ordinary relative trackpad pointer.
+
 config INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS
     int "Trackpoint deadzone radius (pad counts)"
     range 0 1000

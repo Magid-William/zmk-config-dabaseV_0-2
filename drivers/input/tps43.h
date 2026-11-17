@@ -292,7 +292,8 @@ struct tps43_drv_data {
     bool tp_mode;
     bool tp_anchor_valid;
     bool tp_diag;
-    int32_t tp_deadzone;       /* radius, pad counts */
+    int32_t tp_layer;         /* use velocity only on this layer, -1 = all */
+    int32_t tp_deadzone;      /* radius, pad counts */
     int32_t tp_radius;         /* outer radius (full speed), pad counts */
     int32_t tp_max_speed;      /* px/s */
     int32_t tp_exp_x100;       /* speed curve exponent * 100 */

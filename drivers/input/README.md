@@ -54,7 +54,11 @@ When the devicetree node has no `rdy-gpios`, the driver now reads on a
 With `CONFIG_INPUT_TPS43_TRACKPOINT` (enabled in `dabase_v2_right.conf`) the
 driver extends the report-window read through `ABS_X`/`ABS_Y`, stores the first
 single-finger position as a landing anchor, and emits `REL_X`/`REL_Y` from the
-offset to that anchor:
+offset to that anchor.
+
+It does this only while `CONFIG_INPUT_TPS43_TRACKPOINT_LAYER` is active
+(default 6, the hold-J scroll layer). Every other layer keeps the ordinary
+relative trackpad pointer. `-1` keeps the old all-layers behaviour.
 
 - inside `CONFIG_INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS` (default 38
   counts, ~0.75 mm radius / 1.5 mm diameter) nothing moves
@@ -65,13 +69,15 @@ offset to that anchor:
   an edge only reduces the usable travel in that direction
 - a real second finger, or a lift, drops the anchor; a single empty poll
   window mid-touch does not
-- the old relative-movement path is still there and can be restored live
+- leaving the target layer mid-touch drops the anchor and resumes the normal
+  relative path
 
 Everything is tunable over the shell on COM8 (115200):
 
 ```
 tps43_tp status
 tps43_tp mode on|off|toggle
+tps43_tp layer 6                # velocity only on hold-J scroll; off/-1 = all
 tps43_tp deadzone_mm 1.5        # diameter, matches how it is described
 tps43_tp deadzone_counts 38     # radius in raw counts
 tps43_tp radius_mm 10           # full-speed radius

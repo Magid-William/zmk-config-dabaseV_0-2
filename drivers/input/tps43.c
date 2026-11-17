@@ -16,6 +16,7 @@
 #include <errno.h>
 
 #include "tps43.h"
+#include <zmk/keymap.h>
 
 #if IS_ENABLED(CONFIG_SHELL) && DT_HAS_COMPAT_STATUS_OKAY(azoteq_tps43)
 #include <zephyr/shell/shell.h>
@@ -435,10 +436,14 @@ static void tps43_trackpoint_diag(struct tps43_drv_data *drv_data, int32_t abs_x
         dy = abs_y - drv_data->tp_anchor_y;
     }
 
-    LOG_INF("tp diag ax=%d ay=%d n=%u touch=%d anchor=%d,%d off=%d,%d speed=%d",
+    bool layer_active = drv_data->tp_layer < 0 ||
+                        zmk_keymap_layer_active((uint8_t)drv_data->tp_layer);
+
+    LOG_INF("tp diag ax=%d ay=%d n=%u touch=%d anchor=%d,%d off=%d,%d speed=%d layer=%d active=%d",
             (int)abs_x, (int)abs_y, num_fingers, is_touching ? 1 : 0,
             (int)drv_data->tp_anchor_x, (int)drv_data->tp_anchor_y,
-            (int)dx, (int)dy, (int)drv_data->tp_speed);
+            (int)dx, (int)dy, (int)drv_data->tp_speed, (int)drv_data->tp_layer,
+            layer_active ? 1 : 0);
 }
 
 static void tps43_trackpoint_update(const struct device *dev, struct tps43_drv_data *drv_data,
@@ -738,9 +743,17 @@ static void tps43_work_handler(struct k_work *work) {
     drv_data->tp_abs_y = abs_y;
     tps43_trackpoint_diag(drv_data, abs_x, abs_y, num_fingers, is_touching);
 
-    if (drv_data->tp_mode) {
+    bool tp_velocity = drv_data->tp_mode &&
+                       (drv_data->tp_layer < 0 ||
+                        zmk_keymap_layer_active((uint8_t)drv_data->tp_layer));
+    if (tp_velocity) {
         tps43_trackpoint_update(dev, drv_data, abs_x, abs_y, num_fingers, is_touching);
         goto done;
+    }
+    if (drv_data->tp_anchor_valid) {
+        /* Leaving the target layer mid-touch: drop the anchor and the
+         * sub-pixel remainders so the raw path starts clean. */
+        tps43_trackpoint_forget(drv_data);
     }
 
     if (gestures_events[0] != 0 || gestures_events[1] != 0) {
@@ -968,6 +981,7 @@ static int tps43_reset_values(const struct device *dev) {
     drv_data->tp_mode = IS_ENABLED(CONFIG_INPUT_TPS43_TRACKPOINT);
     drv_data->tp_anchor_valid = false;
     drv_data->tp_diag = false;
+    drv_data->tp_layer = CONFIG_INPUT_TPS43_TRACKPOINT_LAYER;
     drv_data->tp_deadzone = CONFIG_INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS;
     drv_data->tp_radius = CONFIG_INPUT_TPS43_TRACKPOINT_RADIUS_COUNTS;
     drv_data->tp_max_speed = CONFIG_INPUT_TPS43_TRACKPOINT_MAX_SPEED;
@@ -2021,8 +2035,16 @@ static int tps43_tp_cmd_status(const struct shell *sh, size_t argc, char **argv)
     int dz_d10 = (int)((d->tp_deadzone * 20) / cpm);
     int r10 = (int)((d->tp_radius * 10) / cpm);
 
-    shell_print(sh, "trackpoint: %s  diag: %s",
-                d->tp_mode ? "on" : "off", d->tp_diag ? "on" : "off");
+    if (d->tp_layer < 0) {
+        shell_print(sh, "trackpoint: %s  diag: %s  layer: all",
+                    d->tp_mode ? "on" : "off", d->tp_diag ? "on" : "off");
+    } else {
+        bool layer_active = zmk_keymap_layer_active((uint8_t)d->tp_layer);
+
+        shell_print(sh, "trackpoint: %s  diag: %s  layer: %d (%s)",
+                    d->tp_mode ? "on" : "off", d->tp_diag ? "on" : "off",
+                    (int)d->tp_layer, layer_active ? "active" : "inactive");
+    }
     shell_print(sh, "  deadzone: %d counts (%d.%d mm radius, %d.%d mm diameter)",
                 (int)d->tp_deadzone, dz_r10 / 10, dz_r10 % 10, dz_d10 / 10, dz_d10 % 10);
     shell_print(sh, "  full speed at %d counts (%d.%d mm radius)",
@@ -2060,6 +2082,30 @@ static int tps43_tp_cmd_mode(const struct shell *sh, size_t argc, char **argv) {
 
     tps43_trackpoint_forget(d);
     shell_print(sh, "trackpoint mode: %s", d->tp_mode ? "on" : "off");
+    return 0;
+}
+
+static int tps43_tp_cmd_layer(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+    long v;
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+
+    if (strcmp(argv[1], "off") == 0) {
+        v = -1;
+    } else if (tps43_tp_parse_long(sh, argv[1], -1, 31, &v) != 0) {
+        return -EINVAL;
+    }
+
+    d->tp_layer = (int32_t)v;
+    tps43_trackpoint_forget(d);
+    if (d->tp_layer < 0) {
+        shell_print(sh, "velocity mode: all layers");
+    } else {
+        shell_print(sh, "velocity mode: layer %d only", (int)d->tp_layer);
+    }
     return 0;
 }
 
@@ -2246,6 +2292,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     sub_tps43_tp,
     SHELL_CMD(status, NULL, "Show trackpoint state", tps43_tp_cmd_status),
     SHELL_CMD_ARG(mode, NULL, "on|off|toggle", tps43_tp_cmd_mode, 2, 0),
+    SHELL_CMD_ARG(layer, NULL, "<layer>|off (-1 = all)", tps43_tp_cmd_layer, 2, 0),
     SHELL_CMD_ARG(deadzone_mm, NULL, "<diameter_mm> (0.0..20.0)",
                   tps43_tp_cmd_deadzone_mm, 2, 0),
     SHELL_CMD_ARG(deadzone_counts, NULL, "<radius_counts> (0..1000)",
