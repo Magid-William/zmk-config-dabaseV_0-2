@@ -151,14 +151,6 @@ config INPUT_TPS43_TRACKPOINT_MAX_SPEED
     help
       Cursor speed at the full-speed radius.
 
-config INPUT_TPS43_TRACKPOINT_EXPONENT_X100
-    int "Trackpoint speed curve exponent (x100)"
-    range 50 500
-    default 200
-    help
-      speed = max_speed * normalized_offset^(exponent/100). 100 is linear,
-      200 is quadratic, 300 is cubic.
-
 config INPUT_TPS43_TRACKPOINT_COUNTS_PER_MM
     int "Trackpoint pad scale (counts per mm)"
     range 1 500

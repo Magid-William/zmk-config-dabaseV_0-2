@@ -63,8 +63,10 @@ relative trackpad pointer. `-1` keeps the old all-layers behaviour.
 - inside `CONFIG_INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS` (default 38
   counts, ~0.75 mm radius / 1.5 mm diameter) nothing moves
 - speed ramps to `..._MAX_SPEED` (default 1000 px/s) at
-  `..._RADIUS_COUNTS` (default 512 counts, ~10 mm), with
-  `..._EXPONENT_X100` (default 200 = quadratic)
+  `..._RADIUS_COUNTS` (default 512 counts, ~10 mm)
+- the radial sensitivity curve is smooth and monotone through
+  radius/speed = 0/0, 10/8, 50/30, 80/80, 100/100; most of the circle is
+  fine control and the last fifth ramps up
 - the radius is anchor-relative and is never clipped to the pad; landing near
   an edge only reduces the usable travel in that direction
 - a real second finger, or a lift, drops the anchor; a single empty poll
@@ -82,8 +84,7 @@ tps43_tp deadzone_mm 1.5        # diameter, matches how it is described
 tps43_tp deadzone_counts 38     # radius in raw counts
 tps43_tp radius_mm 10           # full-speed radius
 tps43_tp radius_counts 512
-tps43_tp speed 1000             # px/s
-tps43_tp exp 200                # x100
+tps43_tp speed 1000             # px/s at full radius
 tps43_tp mm 51                  # counts per mm
 tps43_tp diag on|off|toggle
 tps43_tp reanchor

@@ -297,7 +297,6 @@ struct tps43_drv_data {
     int32_t tp_deadzone;      /* radius, pad counts */
     int32_t tp_radius;         /* outer radius (full speed), pad counts */
     int32_t tp_max_speed;      /* px/s */
-    int32_t tp_exp_x100;       /* speed curve exponent * 100 */
     int32_t tp_counts_per_mm;  /* pad scale, for the shell */
     int32_t tp_anchor_x;
     int32_t tp_anchor_y;

@@ -444,6 +444,53 @@ static void tps43_trackpoint_diag(struct tps43_drv_data *drv_data, int32_t abs_x
             layer_active ? 1 : 0);
 }
 
+/* dabase_v2: radial sensitivity curve.
+ *
+ * Breakpoints (radius %, speed %): 0/0, 10/8, 50/30, 80/80, 100/100.
+ * A monotone cubic Hermite through those points stays smooth and monotonic,
+ * so most of the circle is fine control and the last fifth ramps up. The
+ * raw CSS cubic-bezier(1, 0, 1, 1) would be far more aggressive (~11% at
+ * 50% radius), so the breakpoints are the primary spec here.
+ */
+static float tps43_tp_curve(float x) {
+    static const float px[] = {0.0f, 0.10f, 0.50f, 0.80f, 1.00f};
+    static const float py[] = {0.0f, 0.08f, 0.30f, 0.80f, 1.00f};
+
+    if (x <= px[0]) {
+        return py[0];
+    }
+    if (x >= px[4]) {
+        return py[4];
+    }
+
+    int i = 0;
+    while (i < 3 && x > px[i + 1]) {
+        i++;
+    }
+
+    float h = px[i + 1] - px[i];
+    float s = (x - px[i]) / h;
+    float s2 = s * s;
+    float s3 = s2 * s;
+
+    float slope = (py[i + 1] - py[i]) / h;
+    float slope_prev = i > 0 ? (py[i] - py[i - 1]) / (px[i] - px[i - 1]) : slope;
+    float slope_next =
+        i < 3 ? (py[i + 2] - py[i + 1]) / (px[i + 2] - px[i + 1]) : slope;
+
+    float tangent0 =
+        i == 0 ? slope : 2.0f * slope_prev * slope / (slope_prev + slope);
+    float tangent1 =
+        i == 3 ? slope : 2.0f * slope * slope_next / (slope + slope_next);
+
+    float h00 = 2.0f * s3 - 3.0f * s2 + 1.0f;
+    float h10 = s3 - 2.0f * s2 + s;
+    float h01 = -2.0f * s3 + 3.0f * s2;
+    float h11 = s3 - s2;
+
+    return h00 * py[i] + h10 * h * tangent0 + h01 * py[i + 1] + h11 * h * tangent1;
+}
+
 static void tps43_trackpoint_update(const struct device *dev, struct tps43_drv_data *drv_data,
                                     int32_t abs_x, int32_t abs_y, uint8_t num_fingers,
                                     bool is_touching) {
@@ -532,12 +579,7 @@ static void tps43_trackpoint_update(const struct device *dev, struct tps43_drv_d
         norm = 1.0f;
     }
 
-    float exponent = (float)drv_data->tp_exp_x100 / 100.0f;
-    if (exponent < 0.05f) {
-        exponent = 0.05f;
-    }
-
-    float speed = (float)drv_data->tp_max_speed * powf(norm, exponent);
+    float speed = (float)drv_data->tp_max_speed * tps43_tp_curve(norm);
     if (speed < 0.0f) {
         speed = 0.0f;
     }
@@ -983,7 +1025,6 @@ static int tps43_reset_values(const struct device *dev) {
     drv_data->tp_deadzone = CONFIG_INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS;
     drv_data->tp_radius = CONFIG_INPUT_TPS43_TRACKPOINT_RADIUS_COUNTS;
     drv_data->tp_max_speed = CONFIG_INPUT_TPS43_TRACKPOINT_MAX_SPEED;
-    drv_data->tp_exp_x100 = CONFIG_INPUT_TPS43_TRACKPOINT_EXPONENT_X100;
     drv_data->tp_counts_per_mm = CONFIG_INPUT_TPS43_TRACKPOINT_COUNTS_PER_MM;
     drv_data->tp_anchor_x = 0;
     drv_data->tp_anchor_y = 0;
@@ -1976,8 +2017,7 @@ DT_INST_FOREACH_STATUS_OKAY(TPS43_INIT)
  *   tps43_tp deadzone_counts 154  (radius, raw pad counts)
  *   tps43_tp radius_mm 10         (outer radius, full speed)
  *   tps43_tp radius_counts 512
- *   tps43_tp speed 1000           (px/s)
- *   tps43_tp exp 200              (x100)
+ *   tps43_tp speed 1000           (px/s at full radius)
  *   tps43_tp mm 51                (counts per mm)
  *   tps43_tp diag on|off|toggle
  *   tps43_tp reanchor
@@ -2045,9 +2085,8 @@ static int tps43_tp_cmd_status(const struct shell *sh, size_t argc, char **argv)
                 (int)d->tp_deadzone, dz_r10 / 10, dz_r10 % 10, dz_d10 / 10, dz_d10 % 10);
     shell_print(sh, "  full speed at %d counts (%d.%d mm radius)",
                 (int)d->tp_radius, r10 / 10, r10 % 10);
-    shell_print(sh, "  max %d px/s, exponent %d.%02d, scale %d counts/mm",
-                (int)d->tp_max_speed, (int)(d->tp_exp_x100 / 100),
-                (int)(d->tp_exp_x100 % 100), cpm);
+    shell_print(sh, "  max %d px/s, curve 10:8 50:30 80:80, scale %d counts/mm",
+                (int)d->tp_max_speed, cpm);
     shell_print(sh, "  anchor: %s (%d,%d)",
                 d->tp_anchor_valid ? "yes" : "no", (int)d->tp_anchor_x,
                 (int)d->tp_anchor_y);
@@ -2213,23 +2252,6 @@ static int tps43_tp_cmd_speed(const struct shell *sh, size_t argc, char **argv) 
     return 0;
 }
 
-static int tps43_tp_cmd_exp(const struct shell *sh, size_t argc, char **argv) {
-    struct tps43_drv_data *d = tps43_tp_data(sh);
-    long v;
-
-    if (d == NULL) {
-        return -ENODEV;
-    }
-    if (tps43_tp_parse_long(sh, argv[1], 50, 500, &v) != 0) {
-        return -EINVAL;
-    }
-
-    d->tp_exp_x100 = (int32_t)v;
-    shell_print(sh, "exponent: %d.%02d", (int)(d->tp_exp_x100 / 100),
-                (int)(d->tp_exp_x100 % 100));
-    return 0;
-}
-
 static int tps43_tp_cmd_mm(const struct shell *sh, size_t argc, char **argv) {
     struct tps43_drv_data *d = tps43_tp_data(sh);
     long v;
@@ -2298,7 +2320,6 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
     SHELL_CMD_ARG(radius_counts, NULL, "<outer_radius_counts> (1..4096)",
                   tps43_tp_cmd_radius_counts, 2, 0),
     SHELL_CMD_ARG(speed, NULL, "<px_per_s> (50..5000)", tps43_tp_cmd_speed, 2, 0),
-    SHELL_CMD_ARG(exp, NULL, "<x100> (50..500)", tps43_tp_cmd_exp, 2, 0),
     SHELL_CMD_ARG(mm, NULL, "<counts_per_mm> (1..500)", tps43_tp_cmd_mm, 2, 0),
     SHELL_CMD_ARG(diag, NULL, "on|off|toggle", tps43_tp_cmd_diag, 2, 0),
     SHELL_CMD(reanchor, NULL, "Drop the anchor now", tps43_tp_cmd_reanchor),
