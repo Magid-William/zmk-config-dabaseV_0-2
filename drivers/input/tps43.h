@@ -292,6 +292,7 @@ struct tps43_drv_data {
     bool tp_mode;
     bool tp_anchor_valid;
     bool tp_diag;
+    bool tp_layer_active;     /* set by the app-side layer gate */
     int32_t tp_layer;         /* use velocity only on this layer, -1 = all */
     int32_t tp_deadzone;      /* radius, pad counts */
     int32_t tp_radius;         /* outer radius (full speed), pad counts */
@@ -312,6 +313,12 @@ struct tps43_drv_data {
 };
 
 int tps43_set_sleep(const struct device *dev, bool sleep);
+
+/* dabase_v2: app-side layer gate. The driver library cannot see ZMK's keymap
+ * headers on every build, so tps43_layer_gate.c polls the keymap and pushes
+ * the result here. */
+int32_t tps43_trackpoint_layer(const struct device *dev);
+void tps43_trackpoint_set_layer_active(const struct device *dev, bool active);
 
 /* dabase_v2: cut/restore the pad's power rail. Off stops all I2C traffic;
  * on waits for the pad to boot and re-writes its whole configuration

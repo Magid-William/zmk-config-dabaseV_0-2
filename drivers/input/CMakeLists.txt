@@ -2,4 +2,5 @@ zephyr_library_amend()
 
 zephyr_library_sources_ifdef(CONFIG_INPUT_TPS43 tps43.c)
 target_sources_ifdef(CONFIG_INPUT_TPS43 app PRIVATE tps43_idle_sleeper.c)
+target_sources_ifdef(CONFIG_INPUT_TPS43_TRACKPOINT app PRIVATE tps43_layer_gate.c)
 target_sources_ifdef(CONFIG_INPUT_TPS43_POWER_POLICY app PRIVATE tps43_power_policy.c)
