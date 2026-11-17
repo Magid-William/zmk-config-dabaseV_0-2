@@ -56,8 +56,8 @@ driver extends the report-window read through `ABS_X`/`ABS_Y`, stores the first
 single-finger position as a landing anchor, and emits `REL_X`/`REL_Y` from the
 offset to that anchor:
 
-- inside `CONFIG_INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS` (default 154
-  counts, ~3 mm radius / 6 mm diameter) nothing moves
+- inside `CONFIG_INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS` (default 77
+  counts, ~1.5 mm radius / 3 mm diameter) nothing moves
 - speed ramps to `..._MAX_SPEED` (default 1000 px/s) at
   `..._RADIUS_COUNTS` (default 512 counts, ~10 mm), with
   `..._EXPONENT_X100` (default 200 = quadratic)
@@ -72,8 +72,8 @@ Everything is tunable over the shell on COM8 (115200):
 ```
 tps43_tp status
 tps43_tp mode on|off|toggle
-tps43_tp deadzone_mm 6          # diameter, matches how it is described
-tps43_tp deadzone_counts 154    # radius in raw counts
+tps43_tp deadzone_mm 3          # diameter, matches how it is described
+tps43_tp deadzone_counts 77     # radius in raw counts
 tps43_tp radius_mm 10           # full-speed radius
 tps43_tp radius_counts 512
 tps43_tp speed 1000             # px/s

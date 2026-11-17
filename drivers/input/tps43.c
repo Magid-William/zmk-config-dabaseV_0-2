@@ -451,6 +451,12 @@ static void tps43_trackpoint_update(const struct device *dev, struct tps43_drv_d
         return;
     }
 
+    /* The IQS5xx reports 0xFFFF/0xFFFF when it has no valid coordinate. */
+    if (abs_x == 0xFFFF || abs_y == 0xFFFF) {
+        drv_data->tp_speed = 0;
+        return;
+    }
+
     /* Only one finger drives the pointer. A real second finger drops the
      * anchor, so putting it back down one finger later starts a fresh one. */
     if (num_fingers > 1) {
