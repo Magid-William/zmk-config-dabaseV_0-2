@@ -108,4 +108,53 @@ config INPUT_TPS43_RAW_DIAG
       dabase_v2 bring-up aid: prints the raw gesture/status/finger/relative
       window read from the pad, when it changes and every 2 s.
 
+config INPUT_TPS43_TRACKPOINT
+    bool "Trackpoint-style velocity from the touch landing point"
+    default n
+    help
+      dabase_v2 experiment: read the pad's absolute coordinates and turn the
+      offset from the landing point into a continuous cursor velocity. Inside
+      the deadzone the pointer does not move. The pad's raw relative deltas are
+      not reported while this is on. Toggle at runtime with
+      `tps43_tp mode off` (the feature also pulls in live shell tuning).
+
+config INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS
+    int "Trackpoint deadzone radius (pad counts)"
+    range 0 1000
+    default 154
+    help
+      Radius around the landing point where no motion is emitted. 154 counts
+      is about 3 mm on the TPS43 (6 mm diameter) at 51.2 counts/mm.
+
+config INPUT_TPS43_TRACKPOINT_RADIUS_COUNTS
+    int "Trackpoint full-speed radius (pad counts)"
+    range 1 4096
+    default 512
+    help
+      Offset from the landing point where the speed curve reaches its
+      maximum. 512 counts is about 10 mm on the TPS43.
+
+config INPUT_TPS43_TRACKPOINT_MAX_SPEED
+    int "Trackpoint maximum cursor speed (px/s)"
+    range 50 5000
+    default 1000
+    help
+      Cursor speed at the full-speed radius.
+
+config INPUT_TPS43_TRACKPOINT_EXPONENT_X100
+    int "Trackpoint speed curve exponent (x100)"
+    range 50 500
+    default 200
+    help
+      speed = max_speed * normalized_offset^(exponent/100). 100 is linear,
+      200 is quadratic, 300 is cubic.
+
+config INPUT_TPS43_TRACKPOINT_COUNTS_PER_MM
+    int "Trackpoint pad scale (counts per mm)"
+    range 1 500
+    default 51
+    help
+      Used by the live shell to convert mm to counts and back. The TPS43
+      reports 2048 x 1792 counts over roughly 40 x 35 mm, i.e. 51.2 counts/mm.
+
 endif # INPUT_TPS43

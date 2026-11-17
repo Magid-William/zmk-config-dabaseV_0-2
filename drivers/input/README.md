@@ -49,5 +49,39 @@ When the devicetree node has no `rdy-gpios`, the driver now reads on a
   (bias disabled) while the rail is down
 - `CONFIG_INPUT_TPS43_RAW_DIAG` prints the raw report window for bring-up
 
+## Local patch: trackpoint-style velocity mode (exp/tps43-trackpoint)
+
+With `CONFIG_INPUT_TPS43_TRACKPOINT` (enabled in `dabase_v2_right.conf`) the
+driver extends the report-window read through `ABS_X`/`ABS_Y`, stores the first
+single-finger position as a landing anchor, and emits `REL_X`/`REL_Y` from the
+offset to that anchor:
+
+- inside `CONFIG_INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS` (default 154
+  counts, ~3 mm radius / 6 mm diameter) nothing moves
+- speed ramps to `..._MAX_SPEED` (default 1000 px/s) at
+  `..._RADIUS_COUNTS` (default 512 counts, ~10 mm), with
+  `..._EXPONENT_X100` (default 200 = quadratic)
+- the radius is anchor-relative and is never clipped to the pad; landing near
+  an edge only reduces the usable travel in that direction
+- a real second finger, or a lift, drops the anchor; a single empty poll
+  window mid-touch does not
+- the old relative-movement path is still there and can be restored live
+
+Everything is tunable over the shell on COM8 (115200):
+
+```
+tps43_tp status
+tps43_tp mode on|off|toggle
+tps43_tp deadzone_mm 6          # diameter, matches how it is described
+tps43_tp deadzone_counts 154    # radius in raw counts
+tps43_tp radius_mm 10           # full-speed radius
+tps43_tp radius_counts 512
+tps43_tp speed 1000             # px/s
+tps43_tp exp 200                # x100
+tps43_tp mm 51                  # counts per mm
+tps43_tp diag on|off|toggle
+tps43_tp reanchor
+```
+
 Everything else (init sequence, ACK_RESET, ATI, configuration writes,
 gestures, power management) is upstream behaviour.

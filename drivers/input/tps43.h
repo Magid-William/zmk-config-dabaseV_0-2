@@ -284,6 +284,30 @@ struct tps43_drv_data {
     uint8_t gate_run;
     int64_t last_keepalive_ms;
     bool rail_off;
+
+    /* dabase_v2 experiment: trackpoint-style velocity from the landing point.
+     * The pad's absolute coordinates are used as a virtual joystick: the
+     * offset from the point where the finger landed sets the cursor speed.
+     * All values are live-tunable through the `tps43_tp` shell command. */
+    bool tp_mode;
+    bool tp_anchor_valid;
+    bool tp_diag;
+    int32_t tp_deadzone;       /* radius, pad counts */
+    int32_t tp_radius;         /* outer radius (full speed), pad counts */
+    int32_t tp_max_speed;      /* px/s */
+    int32_t tp_exp_x100;       /* speed curve exponent * 100 */
+    int32_t tp_counts_per_mm;  /* pad scale, for the shell */
+    int32_t tp_anchor_x;
+    int32_t tp_anchor_y;
+    int32_t tp_abs_x;
+    int32_t tp_abs_y;
+    int32_t tp_offset_x;
+    int32_t tp_offset_y;
+    int32_t tp_speed;          /* last emitted speed, px/s */
+    int32_t tp_rem_x;          /* milli-pixel remainders */
+    int32_t tp_rem_y;
+    int64_t tp_last_ms;
+    int64_t tp_last_diag_ms;
 };
 
 int tps43_set_sleep(const struct device *dev, bool sleep);

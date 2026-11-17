@@ -11,10 +11,18 @@
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 #include <zephyr/logging/log.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <errno.h>
 
 #include "tps43.h"
+
+#if IS_ENABLED(CONFIG_SHELL) && DT_HAS_COMPAT_STATUS_OKAY(azoteq_tps43)
+#include <zephyr/shell/shell.h>
+#define TPS43_TP_SHELL 1
+#else
+#define TPS43_TP_SHELL 0
+#endif
 
 LOG_MODULE_REGISTER(tps43, CONFIG_INPUT_LOG_LEVEL);
  
@@ -213,6 +221,10 @@ static int tps43_i2c_write_reg8(const struct device *dev, uint16_t reg, uint8_t 
 #define TPS43_POLL_ACTIVE_MS CONFIG_INPUT_TPS43_POLL_INTERVAL_MS
 #define TPS43_POLL_IDLE_MS CONFIG_INPUT_TPS43_POLL_IDLE_INTERVAL_MS
 
+/* dabase_v2 patch: trackpoint-style velocity mode limits. */
+#define TPS43_TP_MAX_DT_MS 30
+#define TPS43_TP_MAX_PX_PER_REPORT 80
+
 static void tps43_poll_work_handler(struct k_work *work) {
     struct k_work_delayable *dwork = k_work_delayable_from_work(work);
     struct tps43_drv_data *drv_data = CONTAINER_OF(dwork, struct tps43_drv_data, poll_work);
@@ -376,6 +388,176 @@ static void tps43_handle_swipe(const struct device *dev, int16_t rel_x, int16_t 
     }
 }
 
+/* dabase_v2 experiment: trackpoint-style velocity from the landing point.
+ *
+ * The pad's absolute coordinates are treated as a virtual joystick:
+ *   - the first single-finger report stores the landing point (anchor)
+ *   - the offset from the anchor sets direction and speed
+ *   - a radial deadzone around the anchor emits nothing
+ *   - speed saturates at tp_radius
+ *   - lifting the finger (or a second finger) forgets the anchor
+ * The circle is never clipped to the pad: landing near an edge simply means
+ * less usable travel in that direction.
+ */
+static void tps43_trackpoint_forget(struct tps43_drv_data *drv_data) {
+    drv_data->tp_anchor_valid = false;
+    drv_data->tp_speed = 0;
+    drv_data->tp_rem_x = 0;
+    drv_data->tp_rem_y = 0;
+
+    /* Do not carry remainders across a mode switch or a new contact. */
+    drv_data->xy_x_remainder = 0;
+    drv_data->xy_y_remainder = 0;
+    drv_data->scroll_h_remainder = 0;
+    drv_data->scroll_v_remainder = 0;
+    drv_data->gate_x = 0;
+    drv_data->gate_y = 0;
+    drv_data->gate_run = 0;
+}
+
+static void tps43_trackpoint_diag(struct tps43_drv_data *drv_data, int32_t abs_x, int32_t abs_y,
+                                  uint8_t num_fingers, bool is_touching) {
+    if (!drv_data->tp_diag) {
+        return;
+    }
+
+    int64_t now = k_uptime_get();
+    int64_t period = is_touching ? 100 : 1000;
+    if (now - drv_data->tp_last_diag_ms < period) {
+        return;
+    }
+    drv_data->tp_last_diag_ms = now;
+
+    int32_t dx = 0;
+    int32_t dy = 0;
+    if (drv_data->tp_anchor_valid) {
+        dx = abs_x - drv_data->tp_anchor_x;
+        dy = abs_y - drv_data->tp_anchor_y;
+    }
+
+    LOG_INF("tp diag ax=%d ay=%d n=%u touch=%d anchor=%d,%d off=%d,%d speed=%d",
+            (int)abs_x, (int)abs_y, num_fingers, is_touching ? 1 : 0,
+            (int)drv_data->tp_anchor_x, (int)drv_data->tp_anchor_y,
+            (int)dx, (int)dy, (int)drv_data->tp_speed);
+}
+
+static void tps43_trackpoint_update(const struct device *dev, struct tps43_drv_data *drv_data,
+                                    int32_t abs_x, int32_t abs_y, uint8_t num_fingers,
+                                    bool is_touching) {
+    int64_t now = k_uptime_get();
+
+    if (!is_touching) {
+        tps43_trackpoint_forget(drv_data);
+        return;
+    }
+
+    /* Only one finger drives the pointer. A real second finger drops the
+     * anchor, so putting it back down one finger later starts a fresh one. */
+    if (num_fingers > 1) {
+        tps43_trackpoint_forget(drv_data);
+        return;
+    }
+
+    /* A polled pad can return an empty window in the middle of a touch.
+     * Hold the anchor through it instead of re-anchoring on the next one. */
+    if (num_fingers == 0) {
+        drv_data->tp_speed = 0;
+        drv_data->tp_last_ms = now;
+        return;
+    }
+
+    if (!drv_data->tp_anchor_valid) {
+        drv_data->tp_anchor_x = abs_x;
+        drv_data->tp_anchor_y = abs_y;
+        drv_data->tp_abs_x = abs_x;
+        drv_data->tp_abs_y = abs_y;
+        drv_data->tp_offset_x = 0;
+        drv_data->tp_offset_y = 0;
+        drv_data->tp_anchor_valid = true;
+        drv_data->tp_last_ms = now;
+        drv_data->tp_speed = 0;
+        drv_data->tp_rem_x = 0;
+        drv_data->tp_rem_y = 0;
+        return;
+    }
+
+    drv_data->tp_abs_x = abs_x;
+    drv_data->tp_abs_y = abs_y;
+    drv_data->tp_offset_x = abs_x - drv_data->tp_anchor_x;
+    drv_data->tp_offset_y = abs_y - drv_data->tp_anchor_y;
+
+    int64_t dt_ms = now - drv_data->tp_last_ms;
+    drv_data->tp_last_ms = now;
+    if (dt_ms < 1) {
+        dt_ms = 1;
+    }
+    if (dt_ms > TPS43_TP_MAX_DT_MS) {
+        dt_ms = TPS43_TP_MAX_DT_MS;
+    }
+
+    int32_t deadzone = drv_data->tp_deadzone;
+    int32_t radius = drv_data->tp_radius;
+    if (deadzone < 0) {
+        deadzone = 0;
+    }
+    if (radius <= deadzone) {
+        radius = deadzone + 1;
+    }
+
+    int64_t dx = drv_data->tp_offset_x;
+    int64_t dy = drv_data->tp_offset_y;
+    int64_t dist2 = dx * dx + dy * dy;
+
+    if (dist2 <= (int64_t)deadzone * deadzone) {
+        drv_data->tp_speed = 0;
+        drv_data->tp_rem_x = 0;
+        drv_data->tp_rem_y = 0;
+        return;
+    }
+
+    float dist = sqrtf((float)dist2);
+    float norm = (dist - (float)deadzone) / (float)(radius - deadzone);
+    if (norm < 0.0f) {
+        norm = 0.0f;
+    } else if (norm > 1.0f) {
+        norm = 1.0f;
+    }
+
+    float exponent = (float)drv_data->tp_exp_x100 / 100.0f;
+    if (exponent < 0.05f) {
+        exponent = 0.05f;
+    }
+
+    float speed = (float)drv_data->tp_max_speed * powf(norm, exponent);
+    if (speed < 0.0f) {
+        speed = 0.0f;
+    }
+    drv_data->tp_speed = (int32_t)(speed + 0.5f);
+
+    /* Convert px/s to this report's share, carrying sub-pixel remainders so
+     * speeds below one pixel per report still move the cursor. */
+    float px = speed * ((float)dt_ms / 1000.0f);
+    if (px > TPS43_TP_MAX_PX_PER_REPORT) {
+        px = TPS43_TP_MAX_PX_PER_REPORT;
+    }
+
+    drv_data->tp_rem_x += (int32_t)lroundf((float)dx / dist * px * 1000.0f);
+    drv_data->tp_rem_y += (int32_t)lroundf((float)dy / dist * px * 1000.0f);
+
+    int32_t out_x = drv_data->tp_rem_x / 1000;
+    int32_t out_y = drv_data->tp_rem_y / 1000;
+    drv_data->tp_rem_x -= out_x * 1000;
+    drv_data->tp_rem_y -= out_y * 1000;
+
+    if (out_x != 0 || out_y != 0) {
+        LOG_DBG("tp move dx=%d dy=%d off=%d,%d speed=%d",
+                (int)out_x, (int)out_y, (int)drv_data->tp_offset_x,
+                (int)drv_data->tp_offset_y, (int)drv_data->tp_speed);
+        input_report_rel(dev, INPUT_REL_X, (int16_t)out_x, false, K_FOREVER);
+        input_report_rel(dev, INPUT_REL_Y, (int16_t)out_y, true, K_FOREVER);
+    }
+}
+
 /**
  * @brief Main work handler for processing trackpad events
  * 
@@ -424,8 +606,12 @@ static void tps43_work_handler(struct k_work *work) {
      *   [4] NUM_FINGERS        (0x0011)
      *   [5..6] REL_X           (0x0012, big-endian)
      *   [7..8] REL_Y           (0x0014, big-endian)
+     *   [9..10] ABS_X          (0x0016, big-endian)
+     *   [11..12] ABS_Y         (0x0018, big-endian)
+     *   [13..14] TOUCH_STRENGTH (0x001A)
+     *   [15] TOUCH_AREA        (0x001C)
      */
-    uint8_t touch_data[(TPS43_REG_REL_Y + 2) - TPS43_REG_GESTURE_EVENTS_0];
+    uint8_t touch_data[(TPS43_REG_TOUCH_AREA + 1) - TPS43_REG_GESTURE_EVENTS_0];
     ret = read_sequence_registers(dev, TPS43_REG_GESTURE_EVENTS_0, touch_data,
                                   sizeof(touch_data));
     /* dabase_v2 patch: without RDY the pad has no open communication window.
@@ -463,6 +649,8 @@ static void tps43_work_handler(struct k_work *work) {
     uint8_t num_fingers = touch_data[4];
     int16_t rel_x = (int16_t)((touch_data[5] << 8) | touch_data[6]);
     int16_t rel_y = (int16_t)((touch_data[7] << 8) | touch_data[8]);
+    int32_t abs_x = (int32_t)((touch_data[9] << 8) | touch_data[10]);
+    int32_t abs_y = (int32_t)((touch_data[11] << 8) | touch_data[12]);
 
 #if CONFIG_INPUT_TPS43_JITTER_MIN_RUN > 1
     /* dabase_v2: a report with no movement ends a movement run. */
@@ -483,9 +671,9 @@ static void tps43_work_handler(struct k_work *work) {
 
         if ((active && now - last_diag_ms >= 100) || now - last_diag_ms >= 2000) {
             last_diag_ms = now;
-            LOG_INF("raw g=%02x/%02x s=%02x/%02x n=%u dx=%d dy=%d",
+            LOG_INF("raw g=%02x/%02x s=%02x/%02x n=%u dx=%d dy=%d ax=%d ay=%d",
                     touch_data[0], touch_data[1], touch_data[2], touch_data[3],
-                    num_fingers, rel_x, rel_y);
+                    num_fingers, rel_x, rel_y, (int)abs_x, (int)abs_y);
         }
     }
 #endif
@@ -533,6 +721,20 @@ static void tps43_work_handler(struct k_work *work) {
          * by default. */
         input_report_key(dev, INPUT_BTN_TOUCH, is_touching ? 1 : 0, true, K_FOREVER);
 #endif
+        if (!is_touching) {
+            tps43_trackpoint_forget(drv_data);
+        }
+    }
+
+    /* dabase_v2 experiment: absolute-position velocity mode. The raw relative
+     * path below stays available by turning the mode off from the shell. */
+    drv_data->tp_abs_x = abs_x;
+    drv_data->tp_abs_y = abs_y;
+    tps43_trackpoint_diag(drv_data, abs_x, abs_y, num_fingers, is_touching);
+
+    if (drv_data->tp_mode) {
+        tps43_trackpoint_update(dev, drv_data, abs_x, abs_y, num_fingers, is_touching);
+        goto done;
     }
 
     if (gestures_events[0] != 0 || gestures_events[1] != 0) {
@@ -754,6 +956,28 @@ static int tps43_reset_values(const struct device *dev) {
     drv_data->device_ready = false;
     drv_data->initialized = false;
     drv_data->drag_active = false;
+
+    /* dabase_v2 experiment: trackpoint-style velocity defaults. These are
+     * only starting points; `tps43_tp` changes them live. */
+    drv_data->tp_mode = IS_ENABLED(CONFIG_INPUT_TPS43_TRACKPOINT);
+    drv_data->tp_anchor_valid = false;
+    drv_data->tp_diag = false;
+    drv_data->tp_deadzone = CONFIG_INPUT_TPS43_TRACKPOINT_DEADZONE_RADIUS_COUNTS;
+    drv_data->tp_radius = CONFIG_INPUT_TPS43_TRACKPOINT_RADIUS_COUNTS;
+    drv_data->tp_max_speed = CONFIG_INPUT_TPS43_TRACKPOINT_MAX_SPEED;
+    drv_data->tp_exp_x100 = CONFIG_INPUT_TPS43_TRACKPOINT_EXPONENT_X100;
+    drv_data->tp_counts_per_mm = CONFIG_INPUT_TPS43_TRACKPOINT_COUNTS_PER_MM;
+    drv_data->tp_anchor_x = 0;
+    drv_data->tp_anchor_y = 0;
+    drv_data->tp_abs_x = 0;
+    drv_data->tp_abs_y = 0;
+    drv_data->tp_offset_x = 0;
+    drv_data->tp_offset_y = 0;
+    drv_data->tp_speed = 0;
+    drv_data->tp_rem_x = 0;
+    drv_data->tp_rem_y = 0;
+    drv_data->tp_last_ms = k_uptime_get();
+    drv_data->tp_last_diag_ms = 0;
 
     LOG_INF("Values reset");
     return 0;
@@ -1724,6 +1948,315 @@ static int tps43_init(const struct device *dev) {
 
 
 DT_INST_FOREACH_STATUS_OKAY(TPS43_INIT)
+
+#if TPS43_TP_SHELL
+/* dabase_v2 experiment: live tuning over the USB/serial shell.
+ *
+ *   tps43_tp status
+ *   tps43_tp mode on|off|toggle
+ *   tps43_tp deadzone_mm 6        (diameter, matches how it is described)
+ *   tps43_tp deadzone_counts 154  (radius, raw pad counts)
+ *   tps43_tp radius_mm 10         (outer radius, full speed)
+ *   tps43_tp radius_counts 512
+ *   tps43_tp speed 1000           (px/s)
+ *   tps43_tp exp 200              (x100)
+ *   tps43_tp mm 51                (counts per mm)
+ *   tps43_tp diag on|off|toggle
+ *   tps43_tp reanchor
+ */
+static struct tps43_drv_data *tps43_tp_data(const struct shell *sh) {
+    const struct device *dev = DEVICE_DT_GET_ONE(azoteq_tps43);
+
+    if (!device_is_ready(dev)) {
+        shell_error(sh, "tps43 is not ready");
+        return NULL;
+    }
+    return dev->data;
+}
+
+static int tps43_tp_parse_long(const struct shell *sh, const char *s, long min, long max,
+                               long *out) {
+    char *end = NULL;
+    long v = strtol(s, &end, 10);
+
+    if (end == s || *end != '\0' || v < min || v > max) {
+        shell_error(sh, "expected %ld..%ld, got '%s'", min, max, s);
+        return -EINVAL;
+    }
+    *out = v;
+    return 0;
+}
+
+static int tps43_tp_parse_mm(const struct shell *sh, const char *s, float min, float max,
+                             float *out) {
+    char *end = NULL;
+    float v = strtof(s, &end);
+
+    if (end == s || *end != '\0' || !(v >= min && v <= max)) {
+        shell_error(sh, "value out of range, got '%s'", s);
+        return -EINVAL;
+    }
+    *out = v;
+    return 0;
+}
+
+static int tps43_tp_cmd_status(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+
+    (void)argc;
+    (void)argv;
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+
+    int cpm = d->tp_counts_per_mm > 0 ? d->tp_counts_per_mm : 1;
+    int dz_r10 = (int)((d->tp_deadzone * 10) / cpm);
+    int dz_d10 = (int)((d->tp_deadzone * 20) / cpm);
+    int r10 = (int)((d->tp_radius * 10) / cpm);
+
+    shell_print(sh, "trackpoint: %s  diag: %s",
+                d->tp_mode ? "on" : "off", d->tp_diag ? "on" : "off");
+    shell_print(sh, "  deadzone: %d counts (%d.%d mm radius, %d.%d mm diameter)",
+                (int)d->tp_deadzone, dz_r10 / 10, dz_r10 % 10, dz_d10 / 10, dz_d10 % 10);
+    shell_print(sh, "  full speed at %d counts (%d.%d mm radius)",
+                (int)d->tp_radius, r10 / 10, r10 % 10);
+    shell_print(sh, "  max %d px/s, exponent %d.%02d, scale %d counts/mm",
+                (int)d->tp_max_speed, (int)(d->tp_exp_x100 / 100),
+                (int)(d->tp_exp_x100 % 100), cpm);
+    shell_print(sh, "  anchor: %s (%d,%d)",
+                d->tp_anchor_valid ? "yes" : "no", (int)d->tp_anchor_x,
+                (int)d->tp_anchor_y);
+    shell_print(sh, "  abs: %d,%d  offset: %d,%d  speed: %d px/s",
+                (int)d->tp_abs_x, (int)d->tp_abs_y, (int)d->tp_offset_x,
+                (int)d->tp_offset_y, (int)d->tp_speed);
+    shell_print(sh, "  touching: %s", d->touching ? "yes" : "no");
+    return 0;
+}
+
+static int tps43_tp_cmd_mode(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+
+    if (strcmp(argv[1], "on") == 0) {
+        d->tp_mode = true;
+    } else if (strcmp(argv[1], "off") == 0) {
+        d->tp_mode = false;
+    } else if (strcmp(argv[1], "toggle") == 0) {
+        d->tp_mode = !d->tp_mode;
+    } else {
+        shell_error(sh, "use on, off or toggle");
+        return -EINVAL;
+    }
+
+    tps43_trackpoint_forget(d);
+    shell_print(sh, "trackpoint mode: %s", d->tp_mode ? "on" : "off");
+    return 0;
+}
+
+static int tps43_tp_cmd_deadzone_mm(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+    float mm;
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+    if (tps43_tp_parse_mm(sh, argv[1], 0.0f, 20.0f, &mm) != 0) {
+        return -EINVAL;
+    }
+
+    int cpm = d->tp_counts_per_mm > 0 ? d->tp_counts_per_mm : 1;
+    d->tp_deadzone = (int32_t)lroundf(mm * (float)cpm / 2.0f);
+
+    if (d->tp_radius <= d->tp_deadzone) {
+        d->tp_radius = d->tp_deadzone + 1;
+    }
+    tps43_trackpoint_forget(d);
+
+    int d10 = (int)((d->tp_deadzone * 20) / cpm);
+    shell_print(sh, "deadzone: %d counts (%d.%d mm diameter), full speed at %d counts",
+                (int)d->tp_deadzone, d10 / 10, d10 % 10, (int)d->tp_radius);
+    return 0;
+}
+
+static int tps43_tp_cmd_deadzone_counts(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+    long v;
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+    if (tps43_tp_parse_long(sh, argv[1], 0, 1000, &v) != 0) {
+        return -EINVAL;
+    }
+
+    d->tp_deadzone = (int32_t)v;
+    if (d->tp_radius <= d->tp_deadzone) {
+        d->tp_radius = d->tp_deadzone + 1;
+    }
+    tps43_trackpoint_forget(d);
+    shell_print(sh, "deadzone radius: %d counts", (int)d->tp_deadzone);
+    return 0;
+}
+
+static int tps43_tp_cmd_radius_mm(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+    float mm;
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+    if (tps43_tp_parse_mm(sh, argv[1], 0.1f, 40.0f, &mm) != 0) {
+        return -EINVAL;
+    }
+
+    int cpm = d->tp_counts_per_mm > 0 ? d->tp_counts_per_mm : 1;
+    int32_t counts = (int32_t)lroundf(mm * (float)cpm);
+    if (counts <= d->tp_deadzone) {
+        shell_error(sh, "full-speed radius must be above deadzone (%d counts)",
+                    (int)d->tp_deadzone);
+        return -EINVAL;
+    }
+
+    d->tp_radius = counts;
+    tps43_trackpoint_forget(d);
+    shell_print(sh, "full speed at %d counts", (int)d->tp_radius);
+    return 0;
+}
+
+static int tps43_tp_cmd_radius_counts(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+    long v;
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+    if (tps43_tp_parse_long(sh, argv[1], 1, 4096, &v) != 0) {
+        return -EINVAL;
+    }
+    if (v <= d->tp_deadzone) {
+        shell_error(sh, "full-speed radius must be above deadzone (%d counts)",
+                    (int)d->tp_deadzone);
+        return -EINVAL;
+    }
+
+    d->tp_radius = (int32_t)v;
+    tps43_trackpoint_forget(d);
+    shell_print(sh, "full speed at %d counts", (int)d->tp_radius);
+    return 0;
+}
+
+static int tps43_tp_cmd_speed(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+    long v;
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+    if (tps43_tp_parse_long(sh, argv[1], 50, 5000, &v) != 0) {
+        return -EINVAL;
+    }
+
+    d->tp_max_speed = (int32_t)v;
+    shell_print(sh, "max speed: %d px/s", (int)d->tp_max_speed);
+    return 0;
+}
+
+static int tps43_tp_cmd_exp(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+    long v;
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+    if (tps43_tp_parse_long(sh, argv[1], 50, 500, &v) != 0) {
+        return -EINVAL;
+    }
+
+    d->tp_exp_x100 = (int32_t)v;
+    shell_print(sh, "exponent: %d.%02d", (int)(d->tp_exp_x100 / 100),
+                (int)(d->tp_exp_x100 % 100));
+    return 0;
+}
+
+static int tps43_tp_cmd_mm(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+    long v;
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+    if (tps43_tp_parse_long(sh, argv[1], 1, 500, &v) != 0) {
+        return -EINVAL;
+    }
+
+    d->tp_counts_per_mm = (int32_t)v;
+    shell_print(sh, "scale: %d counts/mm (existing counts are unchanged)",
+                (int)d->tp_counts_per_mm);
+    return 0;
+}
+
+static int tps43_tp_cmd_diag(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+
+    if (strcmp(argv[1], "on") == 0) {
+        d->tp_diag = true;
+    } else if (strcmp(argv[1], "off") == 0) {
+        d->tp_diag = false;
+    } else if (strcmp(argv[1], "toggle") == 0) {
+        d->tp_diag = !d->tp_diag;
+    } else {
+        shell_error(sh, "use on, off or toggle");
+        return -EINVAL;
+    }
+
+    shell_print(sh, "diag: %s", d->tp_diag ? "on" : "off");
+    return 0;
+}
+
+static int tps43_tp_cmd_reanchor(const struct shell *sh, size_t argc, char **argv) {
+    struct tps43_drv_data *d = tps43_tp_data(sh);
+
+    (void)argc;
+    (void)argv;
+
+    if (d == NULL) {
+        return -ENODEV;
+    }
+
+    tps43_trackpoint_forget(d);
+    shell_print(sh, "anchor dropped; the next single-finger report re-anchors");
+    return 0;
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(
+    sub_tps43_tp,
+    SHELL_CMD(status, NULL, "Show trackpoint state", tps43_tp_cmd_status),
+    SHELL_CMD_ARG(mode, NULL, "on|off|toggle", tps43_tp_cmd_mode, 2, 0),
+    SHELL_CMD_ARG(deadzone_mm, NULL, "<diameter_mm> (0.0..20.0)",
+                  tps43_tp_cmd_deadzone_mm, 2, 0),
+    SHELL_CMD_ARG(deadzone_counts, NULL, "<radius_counts> (0..1000)",
+                  tps43_tp_cmd_deadzone_counts, 2, 0),
+    SHELL_CMD_ARG(radius_mm, NULL, "<outer_radius_mm> (0.1..40.0)",
+                  tps43_tp_cmd_radius_mm, 2, 0),
+    SHELL_CMD_ARG(radius_counts, NULL, "<outer_radius_counts> (1..4096)",
+                  tps43_tp_cmd_radius_counts, 2, 0),
+    SHELL_CMD_ARG(speed, NULL, "<px_per_s> (50..5000)", tps43_tp_cmd_speed, 2, 0),
+    SHELL_CMD_ARG(exp, NULL, "<x100> (50..500)", tps43_tp_cmd_exp, 2, 0),
+    SHELL_CMD_ARG(mm, NULL, "<counts_per_mm> (1..500)", tps43_tp_cmd_mm, 2, 0),
+    SHELL_CMD_ARG(diag, NULL, "on|off|toggle", tps43_tp_cmd_diag, 2, 0),
+    SHELL_CMD(reanchor, NULL, "Drop the anchor now", tps43_tp_cmd_reanchor),
+    SHELL_SUBCMD_SET_END);
+
+SHELL_CMD_REGISTER(tps43_tp, &sub_tps43_tp, "TPS43 trackpoint tuning", NULL);
+#endif /* TPS43_TP_SHELL */
 
 /**
  * @brief Public function to manage trackpad sleep mode
