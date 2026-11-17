@@ -16,7 +16,15 @@
 #include <errno.h>
 
 #include "tps43.h"
+
+/* Layer gating is only needed on the pointing-capable build. The battery
+ * half does not pull ZMK's app include directory into this library. */
+#if IS_ENABLED(CONFIG_ZMK_POINTING)
 #include <zmk/keymap.h>
+#define TPS43_TP_LAYER_GATE 1
+#else
+#define TPS43_TP_LAYER_GATE 0
+#endif
 
 #if IS_ENABLED(CONFIG_SHELL) && DT_HAS_COMPAT_STATUS_OKAY(azoteq_tps43)
 #include <zephyr/shell/shell.h>
@@ -436,8 +444,12 @@ static void tps43_trackpoint_diag(struct tps43_drv_data *drv_data, int32_t abs_x
         dy = abs_y - drv_data->tp_anchor_y;
     }
 
+#if TPS43_TP_LAYER_GATE
     bool layer_active = drv_data->tp_layer < 0 ||
                         zmk_keymap_layer_active((uint8_t)drv_data->tp_layer);
+#else
+    bool layer_active = true;
+#endif
 
     LOG_INF("tp diag ax=%d ay=%d n=%u touch=%d anchor=%d,%d off=%d,%d speed=%d layer=%d active=%d",
             (int)abs_x, (int)abs_y, num_fingers, is_touching ? 1 : 0,
@@ -743,9 +755,13 @@ static void tps43_work_handler(struct k_work *work) {
     drv_data->tp_abs_y = abs_y;
     tps43_trackpoint_diag(drv_data, abs_x, abs_y, num_fingers, is_touching);
 
+#if TPS43_TP_LAYER_GATE
     bool tp_velocity = drv_data->tp_mode &&
                        (drv_data->tp_layer < 0 ||
                         zmk_keymap_layer_active((uint8_t)drv_data->tp_layer));
+#else
+    bool tp_velocity = drv_data->tp_mode;
+#endif
     if (tp_velocity) {
         tps43_trackpoint_update(dev, drv_data, abs_x, abs_y, num_fingers, is_touching);
         goto done;
@@ -2035,6 +2051,7 @@ static int tps43_tp_cmd_status(const struct shell *sh, size_t argc, char **argv)
     int dz_d10 = (int)((d->tp_deadzone * 20) / cpm);
     int r10 = (int)((d->tp_radius * 10) / cpm);
 
+#if TPS43_TP_LAYER_GATE
     if (d->tp_layer < 0) {
         shell_print(sh, "trackpoint: %s  diag: %s  layer: all",
                     d->tp_mode ? "on" : "off", d->tp_diag ? "on" : "off");
@@ -2045,6 +2062,10 @@ static int tps43_tp_cmd_status(const struct shell *sh, size_t argc, char **argv)
                     d->tp_mode ? "on" : "off", d->tp_diag ? "on" : "off",
                     (int)d->tp_layer, layer_active ? "active" : "inactive");
     }
+#else
+    shell_print(sh, "trackpoint: %s  diag: %s  layer: n/a",
+                d->tp_mode ? "on" : "off", d->tp_diag ? "on" : "off");
+#endif
     shell_print(sh, "  deadzone: %d counts (%d.%d mm radius, %d.%d mm diameter)",
                 (int)d->tp_deadzone, dz_r10 / 10, dz_r10 % 10, dz_d10 / 10, dz_d10 % 10);
     shell_print(sh, "  full speed at %d counts (%d.%d mm radius)",
