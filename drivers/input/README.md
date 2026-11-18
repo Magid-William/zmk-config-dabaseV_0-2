@@ -65,8 +65,9 @@ relative trackpad pointer. `-1` keeps the old all-layers behaviour.
 - speed ramps to `..._MAX_SPEED` (default 1000 px/s) at
   `..._RADIUS_COUNTS` (default 512 counts, ~10 mm)
 - the radial sensitivity curve is smooth and monotone through
-  radius/speed = 0/0, 10/3, 50/20, 80/80, 100/100; most of the circle is
-  fine control and the last fifth ramps up
+  radius/speed = 0/0, 10/3, 50/20, 80/80, 90/100, 100/300; the first 90% of
+  the circle is fine control up to the nominal 1x speed, then the last 10%
+  ramps to 3x
 - the radius is anchor-relative and is never clipped to the pad; landing near
   an edge only reduces the usable travel in that direction
 - a real second finger, or a lift, drops the anchor; a single empty poll

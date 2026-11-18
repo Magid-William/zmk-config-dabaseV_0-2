@@ -223,7 +223,7 @@ static int tps43_i2c_write_reg8(const struct device *dev, uint16_t reg, uint8_t 
 
 /* dabase_v2 patch: trackpoint-style velocity mode limits. */
 #define TPS43_TP_MAX_DT_MS 30
-#define TPS43_TP_MAX_PX_PER_REPORT 80
+#define TPS43_TP_MAX_PX_PER_REPORT 120
 
 static void tps43_poll_work_handler(struct k_work *work) {
     struct k_work_delayable *dwork = k_work_delayable_from_work(work);
@@ -446,25 +446,30 @@ static void tps43_trackpoint_diag(struct tps43_drv_data *drv_data, int32_t abs_x
 
 /* dabase_v2: radial sensitivity curve.
  *
- * Breakpoints (radius %, speed %): 0/0, 10/3, 50/20, 80/80, 100/100.
- * A monotone cubic Hermite through those points stays smooth and monotonic,
- * so most of the circle is fine control and the last fifth ramps up. The
- * raw CSS cubic-bezier(1, 0, 1, 1) would be far more aggressive (~11% at
- * 50% radius), so the breakpoints are the primary spec here.
+ * Breakpoints (radius %, speed %): 0/0, 10/3, 50/20, 80/80, 90/100, 100/300.
+ * A monotone cubic Hermite through those points stays smooth and monotonic.
+ * The first 90% of the circle is fine control reaching the nominal 1x speed,
+ * then the last 10% ramps hard to 3x. The raw CSS cubic-bezier(1, 0, 1, 1)
+ * would be far more aggressive at the midpoint, so these breakpoints are the
+ * primary spec.
  */
+#define TPS43_TP_CURVE_POINTS 6
+
 static float tps43_tp_curve(float x) {
-    static const float px[] = {0.0f, 0.10f, 0.50f, 0.80f, 1.00f};
-    static const float py[] = {0.0f, 0.03f, 0.20f, 0.80f, 1.00f};
+    static const float px[TPS43_TP_CURVE_POINTS] = {0.0f, 0.10f, 0.50f,
+                                                    0.80f, 0.90f, 1.00f};
+    static const float py[TPS43_TP_CURVE_POINTS] = {0.0f, 0.03f, 0.20f,
+                                                    0.80f, 1.00f, 3.00f};
 
     if (x <= px[0]) {
         return py[0];
     }
-    if (x >= px[4]) {
-        return py[4];
+    if (x >= px[TPS43_TP_CURVE_POINTS - 1]) {
+        return py[TPS43_TP_CURVE_POINTS - 1];
     }
 
     int i = 0;
-    while (i < 3 && x > px[i + 1]) {
+    while (i < TPS43_TP_CURVE_POINTS - 2 && x > px[i + 1]) {
         i++;
     }
 
@@ -476,12 +481,16 @@ static float tps43_tp_curve(float x) {
     float slope = (py[i + 1] - py[i]) / h;
     float slope_prev = i > 0 ? (py[i] - py[i - 1]) / (px[i] - px[i - 1]) : slope;
     float slope_next =
-        i < 3 ? (py[i + 2] - py[i + 1]) / (px[i + 2] - px[i + 1]) : slope;
+        i < TPS43_TP_CURVE_POINTS - 2
+            ? (py[i + 2] - py[i + 1]) / (px[i + 2] - px[i + 1])
+            : slope;
 
     float tangent0 =
         i == 0 ? slope : 2.0f * slope_prev * slope / (slope_prev + slope);
     float tangent1 =
-        i == 3 ? slope : 2.0f * slope * slope_next / (slope + slope_next);
+        i == TPS43_TP_CURVE_POINTS - 2
+            ? slope
+            : 2.0f * slope * slope_next / (slope + slope_next);
 
     float h00 = 2.0f * s3 - 3.0f * s2 + 1.0f;
     float h10 = s3 - 2.0f * s2 + s;
@@ -2085,8 +2094,9 @@ static int tps43_tp_cmd_status(const struct shell *sh, size_t argc, char **argv)
                 (int)d->tp_deadzone, dz_r10 / 10, dz_r10 % 10, dz_d10 / 10, dz_d10 % 10);
     shell_print(sh, "  full speed at %d counts (%d.%d mm radius)",
                 (int)d->tp_radius, r10 / 10, r10 % 10);
-    shell_print(sh, "  max %d px/s, curve 10:3 50:20 80:80, scale %d counts/mm",
-                (int)d->tp_max_speed, cpm);
+    shell_print(sh, "  max %d px/s, curve 10:3 50:20 80:80 90:100 100:300",
+                (int)d->tp_max_speed);
+    shell_print(sh, "  scale %d counts/mm", cpm);
     shell_print(sh, "  anchor: %s (%d,%d)",
                 d->tp_anchor_valid ? "yes" : "no", (int)d->tp_anchor_x,
                 (int)d->tp_anchor_y);
